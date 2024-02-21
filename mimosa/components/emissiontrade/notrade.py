@@ -33,7 +33,9 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             RegionalConstraint(
                 lambda m, t, r: (m.mitigation_costs[t, r])
-                == AC(m.relative_abatement[t, r], m, t, r) * m.baseline[t, r],
+                #sector-feature
+                == AC(m.relative_abatement[t, r], m, t, r) * m.baseline_other[t, r],
+                # == AC(m.relative_abatement[t, r], m, t, r) * m.baseline[t, r],
                 "mitigation_costs",
             ),
         ]
