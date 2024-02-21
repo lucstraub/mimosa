@@ -179,6 +179,10 @@ class InstantiatedModel:
             "elasmu": V(params["economics"]["elasmu"]),
             "inequal_aversion": V(params["economics"]["inequal_aversion"]),
             "PRTP": V(params["economics"]["PRTP"]),
+            #sector-feature
+            "industry_scaling_baseline": V(
+                params["industry"]["industry_scaling_baseline"]
+            )
         }
 
         if "custom_mapping" in params["simulation"]:
