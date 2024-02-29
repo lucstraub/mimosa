@@ -16,6 +16,6 @@ for scaling_industry in [0.2, 0.8]:
 
     model1 = MIMOSA(params)
     model1.solve()
-    model1.save(f"testrun_scaling_{scaling_industry}")
+    model1.save(f"testrun_sector_feature_industry_scaling_{scaling_industry}")
     
 # model1.plot(filename="result")
