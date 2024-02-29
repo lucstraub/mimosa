@@ -551,3 +551,14 @@ simulation:
     descr: Custom mapping of parameter values or variables
     type: dict
     default:
+
+##################
+
+#sector-feature
+industry:
+  industry_scaling_baseline:
+    descr: Percentage of baseline emissions for industry (temporary parameter)
+    type: float
+    min: 0
+    max: 1
+    default: 0.6
