@@ -81,20 +81,14 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 name="baseline_emissions",
             ),
             #sector-feature
-            RegionalConstraint(
-                lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
-                "regional industry baseline emissions",
-            ),
+            # RegionalConstraint(
+            #     lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
+            #     "regional industry baseline emissions",
+            # ),
             #sector-feature
             RegionalConstraint(
                 lambda m, t, r: m.baseline_other[t,r] == (1 - m.industry_scaling_baseline) * m.baseline[t,r],
                 "regional other baseline emissions",
-            ),
-            #sector-feature
-            GlobalConstraint(
-                lambda m, t: m.global_emissions_industry[t]
-                == sum(m.baseline_industry[t,r] for r in m.regions),
-                "global industry emissions",
             ),
             # Regional emissions from baseline and relative abatement
             RegionalConstraint(
