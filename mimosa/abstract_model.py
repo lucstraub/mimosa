@@ -7,7 +7,7 @@ Contains all model equations and constraints
 import numpy as np
 from mimosa.common import Param, AbstractModel, Set, add_constraint
 from mimosa.components import (
-    burdensharing,
+    effortsharing,
     emissions,
     emissiontrade,
     financialtransfer,
@@ -33,6 +33,19 @@ def create_abstract_model(
     welfare_module: str,
     objective_module: str,
 ) -> AbstractModel:
+    """
+    ## Building the abstract model
+
+    Builds the abstract model for MIMOSA by combining all components. Some components are optional. In the
+    parameters, different variants of some components can be chosen. The components are:
+
+    - `damage_module`: The damage module to use
+    - `emissiontrade_module`: The emission trading module to use
+    - `financialtransfer_module`: The financial transfer module to use
+    - `welfare_module`: The welfare module to use
+    - `objective_module`: The objective module to use
+
+    """
     m = AbstractModel()
 
     ## Constraints
@@ -122,8 +135,8 @@ def create_abstract_model(
             f"Financial transfer module `{financialtransfer_module}` not implemented"
         )
 
-    # Burden sharing regime
-    constraints.extend(burdensharing.get_constraints(m))
+    # Effort sharing regime
+    constraints.extend(effortsharing.get_constraints(m))
 
     # Cobb-Douglas and economics
     constraints.extend(cobbdouglas.get_constraints(m))

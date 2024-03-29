@@ -1,130 +1,3 @@
-regionstype:
-  descr: Name of the region definition. Used in the mapping of the regional parameters.
-  type: enum
-  values:
-    - IMAGE26
-    - SSP5
-    - World
-  default: IMAGE26
-
-##################
-
-regions:
-  descr: >-
-    Dictionary of all regions with optional dictionaries defining, optionally,
-    manual values for certain parameters for that specific region.
-  type: dict
-  keys:
-    descr: region name
-    type: str
-  values:
-    descr: optional dict to manually override certain regional parameters
-    type: dict
-  default:
-    CAN:
-    USA:
-    MEX:
-    RCAM:
-    BRA:
-    RSAM:
-    NAF:
-    WAF:
-    EAF:
-    SAF:
-    WEU:
-    CEU:
-    TUR:
-    UKR:
-    STAN:
-    RUS:
-    ME:
-    INDIA:
-    KOR:
-    CHN:
-    SEAS:
-    INDO:
-    JAP:
-    OCE:
-    RSAS:
-    RSAF:
-
-##################
-
-input:
-  db_filename:
-    descr: Path to IAMC-formatted CSV file for baseline data
-    type: filepath
-    default: inputdata/data/data_IMAGE_SSP.csv
-    # default_SSP5: ../Databases/SSP_IAM_V2_201811.csv
-
-  baselines:
-    SSP1:
-      scenario:
-        descr: Scenario name of SSP1 baseline
-        type: str
-        default: SSP1-Ref-SPA0-V17
-      model:
-        descr: Model name of SSP1 baseline
-        type: str
-        default: IMAGE
-    SSP2:
-      scenario:
-        descr: Scenario name of SSP2 baseline
-        type: str
-        default: SSP2-Ref-SPA0-V17
-      model:
-        descr: Model name of SSP2 baseline
-        type: str
-        default: IMAGE
-    SSP3:
-      scenario:
-        descr: Scenario name of SSP3 baseline
-        type: str
-        default: SSP3-Ref-SPA0-V17
-      model:
-        descr: Model name of SSP3 baseline
-        type: str
-        default: IMAGE
-    SSP4:
-      scenario:
-        descr: Scenario name of SSP4 baseline
-        type: str
-        default: SSP4-Ref-SPA0-V17
-      model:
-        descr: Model name of SSP4 baseline
-        type: str
-        default: IMAGE
-    SSP5:
-      scenario:
-        descr: Scenario name of SSP5 baseline
-        type: str
-        default: SSP5-Ref-SPA0-V17
-      model:
-        descr: Model name of SSP5 baseline
-        type: str
-        default: IMAGE
-
-  variables:
-    GDP:
-      descr: Variable name for GDP in data file
-      type: enum
-      values:
-        - GDP|PPP
-        - GDP|MER
-      default: GDP|PPP
-
-    emissions:
-      descr: Variable name for emissions variable
-      type: str
-      default: Emissions|CO2
-
-    population:
-      descr: Variable name for population variable
-      type: str
-      default: Population
-
-##################
-
 time:
   start:
     descr: Year in which the model starts
@@ -355,11 +228,12 @@ economics:
 emissions:
   carbonbudget:
     descr: >-
-      Value of the carbon budget.
-      Can also be false, then CBA mode is used
+      Value of the carbon budget. Example: "800 GtCO2" (the unit is important).
+      If set to False, no carbon budget is imposed: this is cost-benefit mode.
+      Default: False.
     type: quantity
     unit: emissions_unit
-    default: 800 GtCO2
+    default: False
     can_be_false: True
 
   global min level:
@@ -421,9 +295,9 @@ emissions:
 
 ##################
 
-burden sharing:
+effort sharing:
   regime:
-    descr: Type of burden sharing to be used
+    descr: Type of effort sharing to be used
     type: enum
     values:
       - noregime
@@ -435,7 +309,7 @@ burden sharing:
   percapconv_year:
     descr: >-
       Year of convergence to per capita emission allowance 
-      (only used when burden sharing - regime is per_cap_convergence)
+      (only used when effort sharing - regime is per_cap_convergence)
       Can also be false, then always use grandfathering
     type: float
     min: 2020
@@ -512,6 +386,183 @@ model:
       - utility
       - globalcosts
     default: utility
+
+regionstype:
+  descr: Name of the region definition. Used in the mapping of the regional parameters.
+  type: enum
+  values:
+    - IMAGE26
+    - SSP5
+    - World
+  default: IMAGE26
+
+regionsmappings:
+  descr: >-
+    List of region types and their conversion tables. Only used for regional parameters,
+    not for aggregating or disaggregating variables or other output.
+  type: list
+  values:
+    descr: >-
+      Dictionary with keys `regionstype1`, `regionstype2` and `conversiontable`.
+    type: dict
+  default:
+    - regionstype1: IMAGE26
+      regionstype2: COACCH
+      conversiontable: inputdata/regions/IMAGE26_COACCH.csv
+    - regionstype1: IMAGE26
+      regionstype2: ADRICE2010
+      conversiontable: inputdata/regions/IMAGE26_ADRICE2010.csv
+    - regionstype1: IMAGE26
+      regionstype2: ADRICE2012
+      conversiontable: inputdata/regions/IMAGE26_ADRICE2012.csv
+
+regional_parameter_files:
+  descr: >-
+    Dictionary of regional parameter files. If the regionstype of the file is different
+    from the regionstype of the model, the file is converted using the `regionsmappings`
+    parameter.
+  type: dict
+  keys:
+    descr: >-
+      Names of the parameter category (e.g. 'MAC', 'damage', 'adaptation', etc.) used when
+      assigning the values to the regional parameters.
+    type: str
+  values:
+    descr: Dictionary with keys `filename` and `regionstype`
+    type: dict
+  default:
+    economics:
+      filename: inputdata/regionalparams/economics.csv
+      regionstype: IMAGE26
+    MAC:
+      filename: inputdata/regionalparams/mac.csv
+      regionstype: IMAGE26
+    COACCH:
+      filename: inputdata/regionalparams/COACCH.csv
+      regionstype: COACCH
+    ADRICE2010:
+      filename: inputdata/regionalparams/ADRICE2010.csv
+      regionstype: ADRICE2010
+    ADRICE2012:
+      filename: inputdata/regionalparams/ADRICE2012.csv
+      regionstype: ADRICE2012
+
+##################
+
+regions:
+  descr: >-
+    Dictionary of all regions with optional dictionaries defining, optionally,
+    manual values for certain parameters for that specific region.
+  type: dict
+  keys:
+    descr: region name
+    type: str
+  values:
+    descr: optional dict to manually override certain regional parameters
+    type: dict
+  default:
+    CAN:
+    USA:
+    MEX:
+    RCAM:
+    BRA:
+    RSAM:
+    NAF:
+    WAF:
+    EAF:
+    SAF:
+    WEU:
+    CEU:
+    TUR:
+    UKR:
+    STAN:
+    RUS:
+    ME:
+    INDIA:
+    KOR:
+    CHN:
+    SEAS:
+    INDO:
+    JAP:
+    OCE:
+    RSAS:
+    RSAF:
+
+##################
+
+input:
+  db_filename:
+    descr: Path to IAMC-formatted CSV file for baseline data
+    type: filepath
+    default: inputdata/data/data_IMAGE_SSP.csv
+
+  baselines:
+    SSP1:
+      scenario:
+        descr: Scenario name of SSP1 baseline
+        type: str
+        default: SSP1-Ref-SPA0-V17
+      model:
+        descr: Model name of SSP1 baseline
+        type: str
+        default: IMAGE
+    SSP2:
+      scenario:
+        descr: Scenario name of SSP2 baseline
+        type: str
+        default: SSP2-Ref-SPA0-V17
+      model:
+        descr: Model name of SSP2 baseline
+        type: str
+        default: IMAGE
+    SSP3:
+      scenario:
+        descr: Scenario name of SSP3 baseline
+        type: str
+        default: SSP3-Ref-SPA0-V17
+      model:
+        descr: Model name of SSP3 baseline
+        type: str
+        default: IMAGE
+    SSP4:
+      scenario:
+        descr: Scenario name of SSP4 baseline
+        type: str
+        default: SSP4-Ref-SPA0-V17
+      model:
+        descr: Model name of SSP4 baseline
+        type: str
+        default: IMAGE
+    SSP5:
+      scenario:
+        descr: Scenario name of SSP5 baseline
+        type: str
+        default: SSP5-Ref-SPA0-V17
+      model:
+        descr: Model name of SSP5 baseline
+        type: str
+        default: IMAGE
+
+  variables:
+    GDP:
+      descr: Variable name for GDP in data file
+      type: enum
+      values:
+        - GDP|PPP
+        - GDP|MER
+      default: GDP|PPP
+
+    emissions:
+      descr: Variable name for emissions variable
+      type: str
+      default: Emissions|CO2
+
+    population:
+      descr: Variable name for population variable
+      type: str
+      default: Population
+
+##################
 
 ##################
 
