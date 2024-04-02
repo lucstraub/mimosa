@@ -75,9 +75,11 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             #sector-feature
             GlobalConstraint(
-                lambda m, t: m.global_emissions_industry[t]
-                == (m.baseline_energy_primary_material[t] + m.baseline_energy_secondary_material[t]) * m.mitigated_energy_carbon_intensity[t],
-                # == sum(m.baseline_industry[t,r] for r in m.regions),
+                lambda m, t: (
+                    m.global_emissions_industry[t]
+                    == (m.baseline_energy_primary_material[t] + m.baseline_energy_secondary_material[t]) * m.mitigated_energy_carbon_intensity[t]
+                    # == sum(m.baseline_industry[t,r] for r in m.regions)
+                ),
                 "global industry emissions",
             ),
         ]
