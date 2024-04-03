@@ -80,7 +80,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 else (m.baseline[t, r] == m.baseline_emissions(m.year(t), r)),
                 name="baseline_emissions",
             ),
-            #sector-feature
+            # #sector-feature
             # RegionalConstraint(
             #     lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
             #     "regional industry baseline emissions",

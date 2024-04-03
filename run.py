@@ -1,4 +1,5 @@
 from mimosa import MIMOSA, load_params
+from datetime import datetime
 
 params = load_params()
 
@@ -16,6 +17,6 @@ for scaling_industry in [0.25]:
 
     model1 = MIMOSA(params)
     model1.solve()
-    model1.save(f"testrun_industry_scaling_{scaling_industry}")
+    model1.save(f"testrun_industry_scaling_{scaling_industry}_{datetime.today().strftime('%Y-%m-%d')}")
     
 # model1.plot(filename="result")
