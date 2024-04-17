@@ -64,9 +64,16 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     #sector-feature
     m.industry_scaling_baseline = Param()
+    m.global_baseline_industry = Var(m.t, units=quant.unit("emissionsrate_unit"))
     m.global_emissions_industry = Var(m.t, units=quant.unit("emissionsrate_unit"))
     m.baseline_industry = Var(m.t, m.regions)
     m.baseline_other = Var(m.t, m.regions)
+    m.relative_abatement_industry = Var(
+        m.t,
+        initialize=0,
+        bounds=(0, 2.5),
+        units=quant.unit("fraction_of_baseline_emissions"),
+    )
 
     constraints.extend(
         [
@@ -80,11 +87,11 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 else (m.baseline[t, r] == m.baseline_emissions(m.year(t), r)),
                 name="baseline_emissions",
             ),
-            # #sector-feature
-            # RegionalConstraint(
-            #     lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
-            #     "regional industry baseline emissions",
-            # ),
+            #sector-feature
+            RegionalConstraint(
+                lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
+                "regional industry baseline emissions",
+            ),
             #sector-feature
             RegionalConstraint(
                 lambda m, t, r: m.baseline_other[t,r] == (1 - m.industry_scaling_baseline) * m.baseline[t,r],
@@ -116,6 +123,17 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 #sector-feature
                 == m.baseline_other[0, r]
                 # == m.baseline_emissions(m.year(0), r)
+            ),
+            GlobalConstraint(
+                lambda m, t: m.global_emissions_industry[t]
+                == (1 - m.relative_abatement_industry[t]) * m.global_baseline_industry[t]
+                if t > 0
+                else Constraint.Skip,
+                "industry_abatement",
+            ),
+            GlobalInitConstraint(
+                lambda m: m.global_emissions_industry[0]
+                == m.global_baseline_industry[0]
             ),
             RegionalConstraint(
                 lambda m, t, r: m.regional_emission_reduction[t, r]

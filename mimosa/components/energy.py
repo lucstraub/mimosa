@@ -62,6 +62,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
 
             GlobalConstraint(
+                lambda m, t: m.carbonprice[t, "USA"]
+                == MAC_industry(m.relative_abatement_industry[t], m, t),
+                "carbonprice industry emissions matching",
+            ),
+
+            GlobalConstraint(
                 lambda m, t: m.baseline_energy_primary_material[t]
                 == 100,
                 "fixed energy of primary material",
@@ -80,6 +86,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 # == sum(m.baseline_industry[t,r] for r in m.regions),
                 "global industry emissions",
             ),
+
+            GlobalConstraint(
+                lambda m, t: m.global_baseline_industry[t]
+                == sum(m.baseline_industry[t,r] for r in m.regions),
+                "global industry baseline",
+            ),
         ]
     )
 
@@ -89,7 +101,10 @@ def MAC_enery_carbon_intensity(a, m, t):
     factor = m.learning_factor[t]
     return factor * 0.6 * a**3
 
+def MAC_industry(a, m, t):
+    factor = m.learning_factor[t]
+    return factor * 0.6 * a**3
 
-def AC_enery_carbon_intensity(a, m, t):
+def AC_industry(a, m, t):
     factor = m.learning_factor[t]
     return factor * 0.6 * a ** (3 + 1) / (3 + 1)
