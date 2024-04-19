@@ -63,7 +63,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             GlobalConstraint(
                 lambda m, t: m.carbonprice[t, "USA"]
-                == MAC_industry(m.relative_abatement_industry[t], m, t),
+                == MAC_industry(m.emissions_industry_regional_relative_abatement[t], m, t),
                 "carbonprice industry emissions matching",
             ),
 
@@ -81,15 +81,15 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             #sector-feature
             GlobalConstraint(
-                lambda m, t: m.global_emissions_industry[t]
+                lambda m, t: m.emissions_industry_global_mitigation[t]
                 == (m.baseline_energy_primary_material[t] + m.baseline_energy_secondary_material[t]) * m.mitigated_energy_carbon_intensity[t],
-                # == sum(m.baseline_industry[t,r] for r in m.regions),
+                # == sum(m.emissions_industry_regional_baseline[t,r] for r in m.regions),
                 "global industry emissions",
             ),
 
             GlobalConstraint(
-                lambda m, t: m.global_baseline_industry[t]
-                == sum(m.baseline_industry[t,r] for r in m.regions),
+                lambda m, t: m.emissions_industry_global_baseline[t]
+                == sum(m.emissions_industry_regional_baseline[t,r] for r in m.regions),
                 "global industry baseline",
             ),
         ]

@@ -50,7 +50,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             RegionalConstraint(
                 lambda m, t, r: m.area_under_MAC[t, r]
-                == AC(m.relative_abatement[t, r], m, t, r) * m.baseline[t, r],
+                == AC(m.emissions_other_regional_relative_abatement[t, r], m, t, r) * m.emissions_total_regional_baseline[t, r],
                 "mitigation_costs",
             ),
             GlobalConstraint(
@@ -86,7 +86,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             RegionalConstraint(
                 lambda m, t, r: m.import_export_emission_reduction_balance[t, r]
                 == m.paid_for_emission_reductions[t, r]
-                - m.regional_emission_reduction[t, r]
+                - m.emissions_total_regional_absolute_reduction[t, r]
                 if t > 0
                 else Constraint.Skip,
                 "import_export_emission_reduction_balance",

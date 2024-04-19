@@ -23,7 +23,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     """Emissions and temperature equations and constraints
 
     Necessary variables:
-        m.relative_abatement
+        m.emissions_other_regional_relative_abatement
         m.cumulative_emissions
         m.T0
         m.temperature
@@ -38,8 +38,8 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     """
     constraints = []
 
-    m.regional_emissions = Var(m.t, m.regions, units=quant.unit("emissionsrate_unit"))
-    m.baseline = Var(
+    m.emissions_other_regional_mitigation = Var(m.t, m.regions, units=quant.unit("emissionsrate_unit"))
+    m.emissions_total_regional_baseline = Var(
         m.t,
         m.regions,
         initialize=lambda m, t, r: m.baseline_emissions(m.year(t), r),
@@ -47,28 +47,29 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     )
     m.baseline_carbon_intensity = Param()
 
-    m.relative_abatement = Var(
+    m.emissions_other_regional_relative_abatement = Var(
         m.t,
         m.regions,
         initialize=0,
         bounds=(0, 2.5),
         units=quant.unit("fraction_of_baseline_emissions"),
     )
-    m.regional_emission_reduction = Var(
+    m.emissions_total_regional_absolute_reduction = Var(
         m.t, m.regions, units=quant.unit("emissionsrate_unit")
     )
     m.cumulative_emissions = Var(m.t, units=quant.unit("emissions_unit"))
-    m.global_emissions = Var(m.t, units=quant.unit("emissionsrate_unit"))
+    m.emissions_total_global_mitigation = Var(m.t, units=quant.unit("emissionsrate_unit"))
 
     m.cumulative_emissions_trapz = Param()
 
     #sector-feature
     m.industry_scaling_baseline = Param()
-    m.global_baseline_industry = Var(m.t, units=quant.unit("emissionsrate_unit"))
-    m.global_emissions_industry = Var(m.t, units=quant.unit("emissionsrate_unit"))
-    m.baseline_industry = Var(m.t, m.regions)
-    m.baseline_other = Var(m.t, m.regions)
-    m.relative_abatement_industry = Var(
+    m.emissions_industry_global_baseline = Var(m.t, units=quant.unit("emissionsrate_unit"))
+    m.emissions_industry_global_mitigation = Var(m.t, units=quant.unit("emissionsrate_unit"))
+    m.emissions_industry_regional_baseline = Var(m.t, m.regions)
+    m.emissions_other_regional_baseline = Var(m.t, m.regions)
+    
+    m.emissions_industry_regional_relative_abatement = Var(
         m.t,
         initialize=0,
         bounds=(0, 2.5),
@@ -80,38 +81,38 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             # Baseline emissions based on emissions or carbon intensity
             RegionalConstraint(
                 lambda m, t, r: (
-                    m.baseline[t, r]
+                    m.emissions_total_regional_baseline[t, r]
                     == m.carbon_intensity(m.year(t), r) * m.GDP_net[t, r]
                 )
                 if value(m.baseline_carbon_intensity)
-                else (m.baseline[t, r] == m.baseline_emissions(m.year(t), r)),
+                else (m.emissions_total_regional_baseline[t, r] == m.baseline_emissions(m.year(t), r)),
                 name="baseline_emissions",
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
+                lambda m, t, r: m.emissions_industry_regional_baseline[t,r] == m.industry_scaling_baseline * m.emissions_total_regional_baseline[t,r],
                 "regional industry baseline emissions",
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.baseline_other[t,r] == (1 - m.industry_scaling_baseline) * m.baseline[t,r],
+                lambda m, t, r: m.emissions_other_regional_baseline[t,r] == (1 - m.industry_scaling_baseline) * m.emissions_total_regional_baseline[t,r],
                 "regional other baseline emissions",
             ),
             # Regional emissions from baseline and relative abatement
             RegionalConstraint(
-                lambda m, t, r: m.regional_emissions[t, r]
-                == (1 - m.relative_abatement[t, r])
+                lambda m, t, r: m.emissions_other_regional_mitigation[t, r]
+                == (1 - m.emissions_other_regional_relative_abatement[t, r])
                 * (
                     #sector-feature
-                    m.baseline_other[t, r]
-                    # m.baseline[t, r]
+                    m.emissions_other_regional_baseline[t, r]
+                    # m.emissions_total_regional_baseline[t, r]
                     # if value(m.baseline_carbon_intensity)
                     # else m.baseline_emissions(m.year(t), r)
 
-                    # Note: this should simply be m.baseline[t,r], but this is numerically less stable
+                    # Note: this should simply be m.emissions_total_regional_baseline[t,r], but this is numerically less stable
                     # than m.baseline_emissions(m.year(t), r) whenever baseline intensity
                     # is used instead of baseline emissions. In fact, m.baseline_emissions(m.year(t), r)
-                    # is just a fixed number, whereas m.baseline[t,r] is a variable depending on
+                    # is just a fixed number, whereas m.emissions_total_regional_baseline[t,r] is a variable depending on
                     # GDP.
                 )
                 if t > 0
@@ -119,39 +120,39 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "regional_abatement",
             ),
             RegionalInitConstraint(
-                lambda m, r: m.regional_emissions[0, r]
+                lambda m, r: m.emissions_other_regional_mitigation[0, r]
                 #sector-feature
-                == m.baseline_other[0, r]
+                == m.emissions_other_regional_baseline[0, r]
                 # == m.baseline_emissions(m.year(0), r)
             ),
             GlobalConstraint(
-                lambda m, t: m.global_emissions_industry[t]
-                == (1 - m.relative_abatement_industry[t]) * m.global_baseline_industry[t]
+                lambda m, t: m.emissions_industry_global_mitigation[t]
+                == (1 - m.emissions_industry_regional_relative_abatement[t]) * m.emissions_industry_global_baseline[t]
                 if t > 0
                 else Constraint.Skip,
                 "industry_abatement",
             ),
             GlobalInitConstraint(
-                lambda m: m.global_emissions_industry[0]
-                == m.global_baseline_industry[0]
+                lambda m: m.emissions_industry_global_mitigation[0]
+                == m.emissions_industry_global_baseline[0]
             ),
             RegionalConstraint(
-                lambda m, t, r: m.regional_emission_reduction[t, r]
-                == m.baseline[t, r] - m.regional_emissions[t, r],
-                "regional_emission_reduction",
+                lambda m, t, r: m.emissions_total_regional_absolute_reduction[t, r]
+                == m.emissions_total_regional_baseline[t, r] - m.emissions_other_regional_mitigation[t, r],
+                "emissions_total_regional_absolute_reduction",
             ),
             # Global emissions (sum from regional emissions)
             GlobalConstraint(
-                lambda m, t: m.global_emissions[t]
+                lambda m, t: m.emissions_total_global_mitigation[t]
                 #sector-feature
-                == sum(m.regional_emissions[t, r] for r in m.regions) + m.global_emissions_industry[t]
-                # == sum(m.regional_emissions[t, r] for r in m.regions)
+                == sum(m.emissions_other_regional_mitigation[t, r] for r in m.regions) + m.emissions_industry_global_mitigation[t]
+                # == sum(m.emissions_other_regional_mitigation[t, r] for r in m.regions)
                 if t > 0
                 else Constraint.Skip,
                 "global_emissions",
             ),
             GlobalInitConstraint(
-                lambda m: m.global_emissions[0]
+                lambda m: m.emissions_total_global_mitigation[0]
                 == sum(m.baseline_emissions(m.year(0), r) for r in m.regions),
                 "global_emissions_init",
             ),
@@ -160,9 +161,9 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 lambda m, t: m.cumulative_emissions[t]
                 == m.cumulative_emissions[t - 1]
                 + (
-                    (m.dt * (m.global_emissions[t] + m.global_emissions[t - 1]) / 2)
+                    (m.dt * (m.emissions_total_global_mitigation[t] + m.emissions_total_global_mitigation[t - 1]) / 2)
                     if value(m.cumulative_emissions_trapz)
-                    else (m.dt * m.global_emissions[t])
+                    else (m.dt * m.emissions_total_global_mitigation[t])
                 )
                 if t > 0
                 else Constraint.Skip,
@@ -203,7 +204,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     # global_constraints.extend(
     #     [
     #         lambda m, t: m.netnegative_emissions[t]
-    #         == m.global_emissions[t] * (1 - tanh(m.global_emissions[t] * 10)) / 2
+    #         == m.emissions_total_global_mitigation[t] * (1 - tanh(m.emissions_total_global_mitigation[t] * 10)) / 2
     #         if value(m.perc_reversible_damages) < 1
     #         else Constraint.Skip,
     #         lambda m, t: m.overshootdot[t]
@@ -243,7 +244,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 name="carbon_budget",
             ),
             GlobalConstraint(
-                lambda m, t: m.global_emissions[t] <= 0
+                lambda m, t: m.emissions_total_global_mitigation[t] <= 0
                 if (
                     m.year(t) >= 2100
                     and value(m.no_pos_emissions_after_budget_year) is True
@@ -255,7 +256,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(lambda m, t: m.cumulative_emissions[t] >= 0),
             # Global and regional inertia constraints:
             GlobalConstraint(
-                lambda m, t: m.global_emissions[t] - m.global_emissions[t - 1]
+                lambda m, t: m.emissions_total_global_mitigation[t] - m.emissions_total_global_mitigation[t - 1]
                 >= m.dt
                 * m.inertia_global
                 * sum(m.baseline_emissions(m.year(0), r) for r in m.regions)
@@ -264,29 +265,29 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 name="global_inertia",
             ),
             RegionalConstraint(
-                lambda m, t, r: m.regional_emissions[t, r]
-                - m.regional_emissions[t - 1, r]
+                lambda m, t, r: m.emissions_other_regional_mitigation[t, r]
+                - m.emissions_other_regional_mitigation[t - 1, r]
                 >= m.dt * m.inertia_regional * m.baseline_emissions(m.year(0), r)
                 if value(m.inertia_regional) is not False and t > 0
                 else Constraint.Skip,
                 name="regional_inertia",
             ),
             RegionalConstraint(
-                lambda m, t, r: m.regional_emissions[t, r]
-                - m.regional_emissions[t - 1, r]
+                lambda m, t, r: m.emissions_other_regional_mitigation[t, r]
+                - m.emissions_other_regional_mitigation[t - 1, r]
                 <= 0
                 if m.year(t - 1) > 2100 and value(m.non_increasing_emissions_after_2100)
                 else Constraint.Skip,
                 name="non_increasing_emissions_after_2100",
             ),
             GlobalConstraint(
-                lambda m, t: m.global_emissions[t] >= m.global_min_level
+                lambda m, t: m.emissions_total_global_mitigation[t] >= m.global_min_level
                 if value(m.global_min_level) is not False
                 else Constraint.Skip,
                 "global_min_level",
             ),
             RegionalConstraint(
-                lambda m, t, r: m.regional_emissions[t, r] >= m.regional_min_level
+                lambda m, t, r: m.emissions_other_regional_mitigation[t, r] >= m.regional_min_level
                 if value(m.regional_min_level) is not False
                 else Constraint.Skip,
                 "regional_min_level",

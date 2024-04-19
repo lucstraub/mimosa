@@ -81,8 +81,8 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     constraints.extend(
         [
             RegionalSoftEqualityConstraint(
-                lambda m, t, r: percapconv_share_rule(m, t, r) * m.global_emissions[t],
-                lambda m, t, r: m.baseline[t, r] - m.paid_for_emission_reductions[t, r],
+                lambda m, t, r: percapconv_share_rule(m, t, r) * m.emissions_total_global_mitigation[t],
+                lambda m, t, r: m.emissions_total_regional_baseline[t, r] - m.paid_for_emission_reductions[t, r],
                 epsilon=None,
                 absolute_epsilon=0.01,
                 ignore_if=lambda m, t, r: value(m.burden_sharing_regime)

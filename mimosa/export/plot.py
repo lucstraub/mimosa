@@ -21,7 +21,7 @@ def full_plot(m, filename, include_plotlyjs=True, custom_layout=None):
         plot.add(m.baseline, row=1)
     except AttributeError:
         pass
-    plot.add(m.regional_emissions, row=1)
+    plot.add(m.emissions_other_regional_mitigation, row=1)
     plot.add(m.carbonprice, row=1, secondary_y=True)
     try:
         plot.add(m.adapt_costs, row=2, stackgroup="costs")
