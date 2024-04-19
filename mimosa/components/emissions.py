@@ -89,12 +89,16 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.baseline_industry[t,r] == m.industry_scaling_baseline * m.baseline[t,r],
+                lambda m, t, r: m.baseline_industry[t,r]
+                == (
+                    (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
+                    * m.global_baseline_industry[t]
+                ),
                 "regional industry baseline emissions",
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.baseline_other[t,r] == (1 - m.industry_scaling_baseline) * m.baseline[t,r],
+                lambda m, t, r: m.baseline_other[t,r] == m.baseline[t,r] - m.baseline_industry[t,r],
                 "regional other baseline emissions",
             ),
             # Regional emissions from baseline and relative abatement
@@ -124,20 +128,20 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 == m.baseline_other[0, r]
                 # == m.baseline_emissions(m.year(0), r)
             ),
+            # GlobalConstraint(
+            #     lambda m, t: m.global_emissions_industry[t]
+            #     == (1 - m.relative_abatement_industry[t]) * m.global_baseline_industry[t],
+            #     "industry_abatement",
+            # ),
             GlobalConstraint(
-                lambda m, t: m.global_emissions_industry[t]
-                == (1 - m.relative_abatement_industry[t]) * m.global_baseline_industry[t]
-                if t > 0
-                else Constraint.Skip,
-                "industry_abatement",
-            ),
-            GlobalInitConstraint(
-                lambda m: m.global_emissions_industry[0]
-                == m.global_baseline_industry[0]
+                lambda m, t: m.relative_reduction_energy_carbon_intensity[t]
+                == m.relative_abatement_industry[t],
+                "relative_industry_abatement",
             ),
             RegionalConstraint(
                 lambda m, t, r: m.regional_emission_reduction[t, r]
-                == m.baseline[t, r] - m.regional_emissions[t, r],
+                == m.baseline_other[t, r] - m.regional_emissions[t, r],
+                # == m.baseline[t, r] - m.regional_emissions[t, r],
                 "regional_emission_reduction",
             ),
             # Global emissions (sum from regional emissions)
