@@ -172,7 +172,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
 def MAC(a, m, t, r):
     factor = m.learning_factor[t] * m.MAC_scaling_factor[r]
-    return factor * m.MAC_gamma * a ** m.MAC_beta
+    return factor * m.MAC_gamma * a**m.MAC_beta
 
 
 def AC(a, m, t, r):
