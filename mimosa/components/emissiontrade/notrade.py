@@ -6,7 +6,7 @@ Type: no trade
 
 from typing import Sequence
 from mimosa.common import AbstractModel, GeneralConstraint, RegionalConstraint, Param
-from mimosa.components.industry import global_AC_industry
+from mimosa.components.industry import global_AC_industry, global_AC_industry_CE
 from mimosa.components.mitigation import AC
 
 
@@ -38,6 +38,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     + (
                         (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
                         * global_AC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                        * m.emissions_industry_global_baseline[t]
+                    )
+                    + (
+                        (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
+                        * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                        * (1 - m.emissions_industry_global_relative_abatement[t]) #considering emissions after non-CE-related emissions abatement
                         * m.emissions_industry_global_baseline[t]
                     )
                 ),

@@ -1,20 +1,14 @@
 """
 Model equations and constraints:
-Energy and energy carbon intensity
+Industry MAC curves for non-CE and CE measures to reduce emissions
 """
 
 from typing import Sequence
 from mimosa.common import (
     AbstractModel,
-    Param,
     Var,
     GeneralConstraint,
     GlobalConstraint,
-    GlobalInitConstraint,
-    RegionalConstraint,
-    RegionalInitConstraint,
-    Constraint,
-    value,
     quant,
 )
 
@@ -39,13 +33,13 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: m.carbonprice[t, "USA"]
                 == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t),
-                "carbonprice industry emissions matching",
+                "carbonprice industry emissions abatement matching",
             ),
 
             GlobalConstraint(
-                lambda m, t: m.emissions_industry_global_baseline[t]
-                == sum(m.emissions_industry_regional_baseline[t,r] for r in m.regions),
-                "global industry baseline",
+                lambda m, t: m.carbonprice[t, "USA"]
+                == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t),
+                "carbonprice industry CE-based emissions abatement matching",
             ),
         ]
     )
@@ -59,3 +53,11 @@ def global_MAC_industry(a, m, t):
 def global_AC_industry(a, m, t):
     factor = m.learning_factor[t]
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)
+
+def global_MAC_industry_CE(a, m, t):
+    factor = (1 + m.learning_factor[t]) / 2 #delayed learning factor for CE measures
+    return factor * 10000 * a ** 5
+
+def global_AC_industry_CE(a, m, t):
+    factor = (1 + m.learning_factor[t]) / 2 #delayed learning factor for CE measures
+    return factor * 10000 * a ** (5 + 1) / (5 + 1)
