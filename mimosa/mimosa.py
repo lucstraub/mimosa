@@ -21,11 +21,10 @@ from mimosa.common import (
     data,
     regional_params,
     utils,
-    units,
     logger,
 )
 from mimosa.common.config.parseconfig import check_params
-from mimosa.export import full_plot, visualise_ipopt_output, save_output
+from mimosa.export import visualise_ipopt_output, save_output
 from mimosa.abstract_model import create_abstract_model
 from mimosa.concrete_model.instantiate_params import InstantiatedModel
 from mimosa.concrete_model import simulation_mode
@@ -50,8 +49,9 @@ class MIMOSA:
 
     def __init__(self, params: dict):
         # Check if input parameter dictionary is valid
-        params = check_params(params)
+        params, parser_tree = check_params(params, True)
         self.params = params
+        self.param_parser_tree = parser_tree
         self.regions = params["regions"]
 
         self.abstract_model = self.get_abstract_model()
@@ -90,7 +90,9 @@ class MIMOSA:
         """
 
         # Create the regional parameter store
-        self.regional_param_store = regional_params.RegionalParamStore(self.params)
+        self.regional_param_store = regional_params.RegionalParamStore(
+            self.params, self.param_parser_tree
+        )
 
         # Create the data store
         self.data_store = data.DataStore(self.params, self.regional_param_store)
@@ -200,10 +202,6 @@ class MIMOSA:
                 value(self.concrete_model.NPV[self.concrete_model.tf])
             )
         )
-
-    @utils.timer("Plotting results")
-    def plot(self, filename="result", **kwargs):
-        full_plot(self.concrete_model, filename, **kwargs)
 
     def save(self, experiment=None, **kwargs):
         save_output(self.params, self.concrete_model, experiment, **kwargs)
