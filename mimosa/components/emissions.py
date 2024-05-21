@@ -145,14 +145,13 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     m.cumulative_emissions = Var(m.t, units=quant.unit("emissions_unit"))
     m.global_emissions = Var(m.t, units=quant.unit("emissionsrate_unit"))
 
-    m.cumulative_emissions_trapz = Param()
+    m.cumulative_emissions_trapz = Param(doc="::emissions.cumulative_emissions_trapz")
 
     #sector-feature
     m.industry_scaling_baseline = Param()
     m.global_emissions_industry = Var(m.t, units=quant.unit("emissionsrate_unit"))
     m.baseline_industry = Var(m.t, m.regions)
     m.baseline_other = Var(m.t, m.regions)
-    m.cumulative_emissions_trapz = Param(doc="::emissions.cumulative_emissions_trapz")
 
     constraints.extend(
         [
@@ -186,30 +185,16 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             # Regional emissions from baseline and relative abatement
             RegionalConstraint(
-                lambda m, t, r: m.regional_emissions[t, r]
-                == (1 - m.relative_abatement[t, r])
-                * (
-                    #sector-feature
-                    m.baseline_other[t, r]
-                    # m.baseline[t, r]
-                    # if value(m.baseline_carbon_intensity)
-                    # else m.baseline_emissions(m.year(t), r)
-
-                    # Note: this should simply be m.baseline[t,r], but this is numerically less stable
-                    # than m.baseline_emissions(m.year(t), r) whenever baseline intensity
-                    # is used instead of baseline emissions. In fact, m.baseline_emissions(m.year(t), r)
-                    # is just a fixed number, whereas m.baseline[t,r] is a variable depending on
-                    # GDP.
-                )
-                if t > 0
-                else Constraint.Skip,
                 lambda m, t, r: (
                     m.regional_emissions[t, r]
                     == (1 - m.relative_abatement[t, r])
                     * (
-                        m.baseline[t, r]
-                        if value(m.baseline_carbon_intensity)
-                        else m.baseline_emissions(m.year(t), r)
+                        #sector-feature
+                        m.baseline_other[t, r]
+                        # m.baseline[t, r]
+                        # if value(m.baseline_carbon_intensity)
+                        # else m.baseline_emissions(m.year(t), r)
+
                         # Note: this should simply be m.baseline[t,r], but this is numerically less stable
                         # than m.baseline_emissions(m.year(t), r) whenever baseline intensity
                         # is used instead of baseline emissions. In fact, m.baseline_emissions(m.year(t), r)
@@ -234,15 +219,11 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             # Global emissions (sum from regional emissions)
             GlobalConstraint(
-                lambda m, t: m.global_emissions[t]
-                #sector-feature
-                == sum(m.regional_emissions[t, r] for r in m.regions) + m.global_emissions_industry[t]
-                # == sum(m.regional_emissions[t, r] for r in m.regions)
-                if t > 0
-                else Constraint.Skip,
                 lambda m, t: (
                     m.global_emissions[t]
-                    == sum(m.regional_emissions[t, r] for r in m.regions)
+                    #sector-feature
+                    == sum(m.regional_emissions[t, r] for r in m.regions) + m.global_emissions_industry[t]
+                    # == sum(m.regional_emissions[t, r] for r in m.regions)
                     if t > 0
                     else Constraint.Skip
                 ),
