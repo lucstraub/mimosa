@@ -38,12 +38,11 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     + (
                         (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
                         * global_AC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
-                        * m.emissions_industry_global_baseline[t]
+                        * m.emissions_industry_global_mitigation_CE[t] #considering emissions after CE-related emissions abatement
                     )
                     + (
                         (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
                         * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
-                        * (1 - m.emissions_industry_global_relative_abatement[t]) #considering emissions after non-CE-related emissions abatement
                         * m.emissions_industry_global_baseline[t]
                     )
                 ),
