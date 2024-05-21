@@ -100,7 +100,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             RegionalConstraint(
                 lambda m, t, r: m.carbonprice[t, r]
-                == MAC(m.relative_abatement[t, r], m, t, r),
+                == MAC(m.emissions_other_regional_relative_abatement[t, r], m, t, r),
                 "carbonprice",
             ),
             RegionalInitConstraint(
@@ -136,7 +136,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: (
                     m.global_emission_reduction_per_cost_unit[t]
-                    == sum(m.regional_emission_reduction[t, r] for r in m.regions)
+                    == sum(m.emissions_total_regional_absolute_reduction[t, r] for r in m.regions)
                     / soft_min(sum(m.mitigation_costs[t, r] for r in m.regions))
                     if t > 0
                     else Constraint.Skip
@@ -148,7 +148,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     m.global_cost_per_emission_reduction_unit[t]
                     == sum(m.mitigation_costs[t, r] for r in m.regions)
                     / soft_min(
-                        sum(m.regional_emission_reduction[t, r] for r in m.regions)
+                        sum(m.emissions_total_regional_absolute_reduction[t, r] for r in m.regions)
                     )
                     if t > 0
                     else Constraint.Skip
@@ -241,7 +241,7 @@ def MAC(a, m, t, r):
     relative to the world average, we obtain a scaling factor for the MAC.
     """
     factor = m.learning_factor[t] * m.MAC_scaling_factor[r]
-    return factor * m.MAC_gamma * a**m.MAC_beta
+    return factor * m.MAC_gamma * a ** m.MAC_beta
 
 
 def AC(a, m, t, r):

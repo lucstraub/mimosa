@@ -13,6 +13,7 @@ from mimosa.components import (
     financialtransfer,
     cobbdouglas,
     damages,
+    industry,
     mitigation,
     objective,
     sealevelrise,
@@ -108,6 +109,9 @@ def create_abstract_model(
 
     # Abatement costs
     constraints.extend(mitigation.get_constraints(m))
+
+    # Energy and energy carbon intensity
+    constraints.extend(industry.get_constraints(m))
 
     # Emission trading
     if emissiontrade_module == "notrade":
