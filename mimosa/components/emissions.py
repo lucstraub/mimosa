@@ -576,6 +576,7 @@ def _get_inertia_and_budget_constraints(
             ),
             RegionalConstraint(
                 lambda m, t, r: (
+                    # faulty logic: currently comparing non-industry mitigation to baseline of overall economy
                     m.emissions_other_regional_mitigation[t, r] - m.emissions_other_regional_mitigation[t - 1, r]
                     >= m.dt * m.inertia_regional * m.baseline_emissions(m.year(0), r)
                     if value(m.inertia_regional) is not False and t > 0
@@ -593,6 +594,7 @@ def _get_inertia_and_budget_constraints(
             ),
             RegionalConstraint(
                 lambda m, t, r: (
+                    # faulty logic: currently comparing non-industry mitigation to regional minimum meant for overall economy
                     m.emissions_other_regional_mitigation[t, r] >= m.regional_min_level
                     if value(m.regional_min_level) is not False
                     else Constraint.Skip
@@ -601,6 +603,8 @@ def _get_inertia_and_budget_constraints(
             ),
             RegionalConstraint(
                 lambda m, t, r: (
+                    # faulty logic: currently comparing regional non-industry mitigation while it is meant for overall economy
+                    # one fix might be to introduce an additional global constraint for final global industry emissions
                     m.emissions_other_regional_mitigation[t, r] - m.emissions_other_regional_mitigation[t - 1, r] <= 0
                     if m.year(t - 1) > 2100
                     and value(m.non_increasing_emissions_after_2100)
