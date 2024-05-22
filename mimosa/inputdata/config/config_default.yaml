@@ -608,8 +608,8 @@ simulation:
 #sector-feature
 industry:
   industry_scaling_baseline:
-    descr: Percentage of baseline emissions for industry (temporary parameter)
+    descr: Percentage of baseline emissions for industry
     type: float
     min: 0
     max: 1
-    default: 0.25
+    default: 0.45
