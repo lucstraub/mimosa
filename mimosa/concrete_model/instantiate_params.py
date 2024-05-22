@@ -144,8 +144,6 @@ class InstantiatedModel:
             "LBD_scaling": V(quant("40 GtCO2", "emissions_unit")),
             "LOT_rate": V(0),
             "fixed_adaptation": V(params["economics"]["adaptation"]["fixed"]),
-            #sector-feature
-            "industry_scaling_baseline": V(params["industry"]["industry_scaling_baseline"])
         }
 
         parameter_mapping.update(parameter_mapping_manual)

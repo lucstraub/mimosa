@@ -125,7 +125,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     "Parameters"
     m.baseline_carbon_intensity = Param(doc="::emissions.baseline carbon intensity")
     m.cumulative_emissions_trapz = Param(doc="::emissions.cumulative_emissions_trapz")
-    m.industry_scaling_baseline = Param(doc="industry.industry_scaling_baseline")
+    m.industry_scaling_baseline = Param(doc="::industry.industry_scaling_baseline")
     
     "Variables"
     #baseline emissions
