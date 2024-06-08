@@ -240,10 +240,10 @@ def MAC(a, m, t, r):
     submodule of IMAGE). By comparing the carbon price per region required to reach 75% CO<sub>2</sub> reduction in 2050 compared to baseline,
     relative to the world average, we obtain a scaling factor for the MAC.
     """
-    factor = m.learning_factor[t] * m.MAC_scaling_factor[r]
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
     return factor * m.MAC_gamma * a ** m.MAC_beta
 
 
 def AC(a, m, t, r):
-    factor = m.learning_factor[t] * m.MAC_scaling_factor[r]
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)

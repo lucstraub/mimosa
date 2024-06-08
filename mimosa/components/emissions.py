@@ -215,11 +215,13 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 # == m.baseline_emissions(m.year(0), r)
             ),
             GlobalConstraint(
-                lambda m, t: m.emissions_industry_global_mitigation_CE[t]
-                == (1 - m.emissions_industry_global_relative_reduction_from_CE[t])
-                * m.emissions_industry_global_baseline[t]
-                if t > 0
-                else Constraint.Skip,
+                lambda m, t: (
+                    m.emissions_industry_global_mitigation_CE[t]
+                    == (1 - m.emissions_industry_global_relative_reduction_from_CE[t])
+                    * m.emissions_industry_global_baseline[t]
+                    if t > 0
+                    else Constraint.Skip
+                ),
                 "global_industry_abatement_CE",
             ),
             GlobalInitConstraint(
