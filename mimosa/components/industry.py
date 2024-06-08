@@ -35,12 +35,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: m.industry_scaling_factor[t] == 0.006172785552270061 * m.year(t) - 11.710824778825415,
-                "industry scaling factor ",
+                "industry scaling factor",
             ),
 
             GlobalConstraint(
                 lambda m, t: m.non_industry_scaling_factor[t] == -0.006045817956142956 * m.year(t) + 13.342462718225216,
-                "industry scaling factor ",
+                "non-industry scaling factor",
             ),
         ]
     )
