@@ -15,6 +15,6 @@ params["emissions"]["non increasing emissions after 2100"] = False
 model1 = MIMOSA(params)
 model1.solve()
 # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-model1.save(f"testrun_industry_with_CE_dummy_MAC_curves_{datetime.today().strftime('%Y-%m-%d, %H:%M')}")
+model1.save(f"testrun_industry_with_CE_dummy_MAC_curves_{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
     
 # model1.plot(filename="result")
