@@ -28,6 +28,14 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     """
     constraints = []
 
+    m.mitigation_costs_industry = Var(
+        m.t,
+        m.regions,
+        # within=NonNegativeReals,
+        initialize=0,
+        units=quant.unit("currency_unit"),
+    )
+
     # industry and non-industry scaling factors
     m.industry_scaling_factor = Var(m.t)
     m.non_industry_scaling_factor = Var(m.t)
@@ -52,12 +60,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t),
                 "carbonprice industry emissions abatement matching",
             ),
-
-            GlobalConstraint(
-                lambda m, t: m.carbonprice[t, "USA"]
-                == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t),
-                "carbonprice industry CE-based emissions abatement matching",
-            ),
         ]
     )
 
@@ -70,11 +72,3 @@ def global_MAC_industry(a, m, t):
 def global_AC_industry(a, m, t):
     factor = m.learning_factor[t] * m.industry_scaling_factor[t]
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)
-
-def global_MAC_industry_CE(a, m, t):
-    factor = (1 + m.learning_factor[t]) / 2 #delayed learning factor for CE measures
-    return factor * 10000 * a ** 5
-
-def global_AC_industry_CE(a, m, t):
-    factor = (1 + m.learning_factor[t]) / 2 #delayed learning factor for CE measures
-    return factor * 10000 * a ** (5 + 1) / (5 + 1)
