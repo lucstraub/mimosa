@@ -28,6 +28,22 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     """
     constraints = []
 
+    m.non_CE_mitigation_costs_industry = Var(
+        m.t,
+        m.regions,
+        # within=NonNegativeReals,
+        initialize=0,
+        units=quant.unit("currency_unit"),
+    )
+
+    m.CE_mitigation_costs_industry = Var(
+        m.t,
+        m.regions,
+        # within=NonNegativeReals,
+        initialize=0,
+        units=quant.unit("currency_unit"),
+    )
+
     # industry and non-industry scaling factors
     m.industry_scaling_factor = Var(m.t)
     m.non_industry_scaling_factor = Var(m.t)
