@@ -42,12 +42,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     constraints.extend(
         [
             GlobalConstraint(
-                lambda m, t: m.industry_scaling_factor[t] == 0.006172785552270061 * m.year(t) - 11.710824778825415,
+                lambda m, t: m.industry_scaling_factor[t] == 0.011355298773375551 * m.year(t) - 22.287871097393577,
                 "industry scaling factor",
             ),
 
             GlobalConstraint(
-                lambda m, t: m.non_industry_scaling_factor[t] == -0.006045817956142956 * m.year(t) + 13.342462718225216,
+                lambda m, t: m.non_industry_scaling_factor[t] == -0.006245140521591652 * m.year(t) + 13.77368790184011,
                 "non-industry scaling factor",
             ),
         ]
@@ -57,10 +57,11 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: (
-                    (
-                        sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
-                        / sum(m.L(m.year(t), x) for x in m.regions)
-                    )
+                    # (
+                    #     sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
+                    #     / sum(m.L(m.year(t), x) for x in m.regions)
+                    # )
+                    m.carbonprice[t, "USA"]
                     == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
                 ),
                 "carbonprice industry emissions abatement matching",

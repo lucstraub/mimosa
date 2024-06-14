@@ -175,7 +175,7 @@ class MIMOSA:
             # Solve locally using ipopt
             opt: OptSolver = SolverFactory("ipopt")
             opt.options["halt_on_ampl_error"] = halt_on_ampl_error
-            # opt.options["max_iter"] = 5
+            # opt.options["max_iter"] = 10000 #max number of iterations
             if ipopt_output_file is not None:
                 opt.options["output_file"] = ipopt_output_file
             results = opt.solve(
