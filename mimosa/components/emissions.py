@@ -158,7 +158,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     m.emissions_industry_global_relative_reduction_from_CE = Var(
         m.t, units=quant.unit("fraction_of_baseline_emissions"),
         initialize=0,
-        bounds=(0, 0.7), #cap emission reductions from CE measures at 70% (dummy value)
+        bounds=(0, 1),
     )
 
     constraints.extend(
