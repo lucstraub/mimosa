@@ -5,7 +5,7 @@ from datetime import datetime
 params = load_params()
 
 # Make changes to the params if needed
-params["emissions"]["carbonbudget"] = False
+params["emissions"]["carbonbudget"] = "500 GtCO2"
 params["emissions"]["baseline carbon intensity"] = False
 # params["time"]["dt"] = 10
 params["emissions"]["inertia"]["global"] = -0.05
@@ -17,6 +17,6 @@ params['industry']['basic_material_scaling_baseline'] = 0.66 # based on Material
 model1 = MIMOSA(params)
 model1.solve()
 # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-model1.save(f"testrun_industry{params['industry']['industry_scaling_baseline']}x{params['industry']['basic_material_scaling_baseline']}_with_CE_MAC_curves0.4_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}x{params['industry']['basic_material_scaling_baseline']}_with_CE_MAC_curves0.4_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
     
 # model1.plot(filename="result")
