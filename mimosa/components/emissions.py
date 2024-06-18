@@ -539,9 +539,9 @@ def _get_inertia_and_budget_constraints(
                 ),
                 "regional_min_level",
             ),
-            RegionalConstraint(
-                lambda m, t, r: (
-                    m.regional_emissions[t, r] - m.regional_emissions[t - 1, r] <= 0
+            GlobalConstraint(
+                lambda m, t: (
+                    m.global_emissions[t] - m.global_emissions[t - 1] <= 0
                     if m.year(t - 1) > 2100
                     and value(m.non_increasing_emissions_after_2100)
                     else Constraint.Skip
