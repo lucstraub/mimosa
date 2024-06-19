@@ -62,7 +62,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 == (
                     (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
                     * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
-                    * m.emissions_industry_global_baseline[t]
+                    * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
                 ),
                 "CE_mitigation_costs_industry",
             ),

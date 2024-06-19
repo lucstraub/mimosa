@@ -178,12 +178,12 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             GlobalConstraint(
                 lambda m, t: m.emissions_industry_global_baseline[t]
-                == sum(m.industry_scaling_baseline * m.basic_material_scaling_baseline * m.emissions_total_regional_baseline[t,r] for r in m.regions),
+                == sum(m.industry_scaling_baseline * m.emissions_total_regional_baseline[t,r] for r in m.regions),
                 "global industry baseline emissions",
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.emissions_other_regional_baseline[t,r] == (1 - m.industry_scaling_baseline * m.basic_material_scaling_baseline) * m.emissions_total_regional_baseline[t,r],
+                lambda m, t, r: m.emissions_other_regional_baseline[t,r] == (1 - m.industry_scaling_baseline) * m.emissions_total_regional_baseline[t,r],
                 "regional non-industry baseline emissions",
             ),
             # Regional emissions from baseline and relative abatement
@@ -218,7 +218,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: (
                     m.emissions_industry_global_mitigation_CE[t]
-                    == (1 - m.emissions_industry_global_relative_reduction_from_CE[t])
+                    == (1 - m.emissions_industry_global_relative_reduction_from_CE[t] * m.basic_material_scaling_baseline) # applying reduction through CE to basic material production share of industry emissions
                     * m.emissions_industry_global_baseline[t]
                     if t > 0
                     else Constraint.Skip
