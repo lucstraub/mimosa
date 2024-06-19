@@ -126,7 +126,6 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     m.baseline_carbon_intensity = Param(doc="::emissions.baseline carbon intensity")
     m.cumulative_emissions_trapz = Param(doc="::emissions.cumulative_emissions_trapz")
     m.industry_scaling_baseline = Param(doc="::industry.industry_scaling_baseline")
-    m.basic_material_scaling_baseline = Param(doc="::industry.basic_material_scaling_baseline")
     
     "Variables"
     #baseline emissions
@@ -172,12 +171,12 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             GlobalConstraint(
                 lambda m, t: m.emissions_industry_global_baseline[t]
-                == sum(m.industry_scaling_baseline * m.basic_material_scaling_baseline * m.emissions_total_regional_baseline[t,r] for r in m.regions),
+                == sum(m.industry_scaling_baseline * m.emissions_total_regional_baseline[t,r] for r in m.regions),
                 "global industry baseline emissions",
             ),
             #sector-feature
             RegionalConstraint(
-                lambda m, t, r: m.emissions_other_regional_baseline[t,r] == (1 - m.industry_scaling_baseline * m.basic_material_scaling_baseline) * m.emissions_total_regional_baseline[t,r],
+                lambda m, t, r: m.emissions_other_regional_baseline[t,r] == (1 - m.industry_scaling_baseline) * m.emissions_total_regional_baseline[t,r],
                 "regional non-industry baseline emissions",
             ),
             # Regional emissions from baseline and relative abatement

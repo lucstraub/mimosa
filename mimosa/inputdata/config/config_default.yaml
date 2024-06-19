@@ -613,10 +613,3 @@ industry:
     min: 0
     max: 1
     default: 0.35
-  
-  basic_material_scaling_baseline:
-    descr: Percentage of baseline emissions for basic materials production/ heavy industry
-    type: float
-    min: 0
-    max: 1
-    default: 1
