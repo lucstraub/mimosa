@@ -50,22 +50,22 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         units=quant.unit("currency_unit/emissions_unit"),
     )
 
-    # industry and non-industry scaling factors
-    m.industry_scaling_factor = Var(m.t)
-    m.non_industry_scaling_factor = Var(m.t)
-    constraints.extend(
-        [
-            GlobalConstraint(
-                lambda m, t: m.industry_scaling_factor[t] == 0.011355298773375551 * m.year(t) - 22.287871097393577,
-                "industry scaling factor",
-            ),
+    # # industry and non-industry scaling factors
+    # m.industry_scaling_factor = Var(m.t)
+    # m.non_industry_scaling_factor = Var(m.t)
+    # constraints.extend(
+    #     [
+    #         GlobalConstraint(
+    #             lambda m, t: m.industry_scaling_factor[t] == 0.011355298773375551 * m.year(t) - 22.287871097393577,
+    #             "industry scaling factor",
+    #         ),
 
-            GlobalConstraint(
-                lambda m, t: m.non_industry_scaling_factor[t] == -0.006245140521591652 * m.year(t) + 13.77368790184011,
-                "non-industry scaling factor",
-            ),
-        ]
-    )
+    #         GlobalConstraint(
+    #             lambda m, t: m.non_industry_scaling_factor[t] == -0.006245140521591652 * m.year(t) + 13.77368790184011,
+    #             "non-industry scaling factor",
+    #         ),
+    #     ]
+    # )
 
     constraints.extend(
         [
@@ -131,11 +131,13 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     return constraints
 
 def global_MAC_industry(a, m, t):
-    factor = m.learning_factor[t] * m.industry_scaling_factor[t]
+    # factor = m.learning_factor[t] * m.industry_scaling_factor[t]
+    factor = m.learning_factor[t] * 1.46003066623869 # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
     return factor * m.MAC_gamma * a ** m.MAC_beta
 
 def global_AC_industry(a, m, t):
-    factor = m.learning_factor[t] * m.industry_scaling_factor[t]
+    # factor = m.learning_factor[t] * m.industry_scaling_factor[t]
+    factor = m.learning_factor[t] * 1.46003066623869 # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)
 
 def global_MAC_industry_CE(a, m, t):
