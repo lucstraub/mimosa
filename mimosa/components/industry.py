@@ -142,8 +142,12 @@ def global_AC_industry(a, m, t):
 
 def global_MAC_industry_CE(a, m, t):
     conversion_factor = 1.0508474576271185 / 1000 #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2 
-    return conversion_factor * ((200 / m.CE_max_abatement[t]) * a - 100) #based on Material Economics abatement curve, adjusted to 2005USD
+    # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a - 100) #based on Material Economics abatement curve, adjusted to 2005USD
+    return conversion_factor * ((100 / m.CE_max_abatement[t]) * a) #based on Material Economics abatement curve, adjusted to 2005USD
+    # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a) #based on Material Economics abatement curve, adjusted to 2005USD
 
 def global_AC_industry_CE(a, m, t):
     conversion_factor = 1.0508474576271185 / 1000 #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2 
-    return conversion_factor * ((200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) - 100 * a ** (0 + 1) / (0 + 1)) #based on Material Economics abatement curve, adjusted to 2005USD
+    # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) - 100 * a ** (0 + 1) / (0 + 1)) #based on Material Economics abatement curve, adjusted to 2005USD
+    return conversion_factor * (100 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) #based on Material Economics abatement curve, adjusted to 2005USD
+    # return conversion_factor * (200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) #based on Material Economics abatement curve, adjusted to 2005USD
