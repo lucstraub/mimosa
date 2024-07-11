@@ -241,11 +241,11 @@ def MAC(a, m, t, r):
     relative to the world average, we obtain a scaling factor for the MAC.
     """
     # factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
-    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 # fixed non-industry scaling factor calibrated to 2070 data
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
     return factor * m.MAC_gamma * a ** m.MAC_beta
 
 
 def AC(a, m, t, r):
     # factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
-    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 # fixed non-industry scaling factor calibrated to 2070 data
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)

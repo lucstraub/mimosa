@@ -613,3 +613,10 @@ industry:
     min: 0
     max: 1
     default: 0.35
+  
+  gamma_scaling:
+    descr: Scaling factor for the gamma parameter in the MAC curve, used in sector calibration
+    type: float
+    min: 0
+    max: 2
+    default: 1

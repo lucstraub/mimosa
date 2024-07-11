@@ -7,6 +7,7 @@ from typing import Sequence
 from mimosa.common import (
     AbstractModel,
     Var,
+    Param,
     GeneralConstraint,
     GlobalConstraint,
     quant,
@@ -35,6 +36,8 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         initialize=0,
         units=quant.unit("currency_unit"),
     )
+
+    m.gamma_scaling = Param(doc="::industry.gamma_scaling")
 
     # # industry and non-industry scaling factors
     # m.industry_scaling_factor = Var(m.t)
@@ -73,10 +76,10 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
 def global_MAC_industry(a, m, t):
     # factor = m.learning_factor[t] * m.industry_scaling_factor[t]
-    factor = m.learning_factor[t] * 1.46003066623869 # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
+    factor = m.learning_factor[t] * 1.46003066623869 * m.gamma_scaling # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
     return factor * m.MAC_gamma * a ** m.MAC_beta
 
 def global_AC_industry(a, m, t):
     # factor = m.learning_factor[t] * m.industry_scaling_factor[t]
-    factor = m.learning_factor[t] * 1.46003066623869 # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
+    factor = m.learning_factor[t] * 1.46003066623869 * m.gamma_scaling # fixed industry scaling factor calibrated to 2070 data which shows hard-to-abate character 
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)
