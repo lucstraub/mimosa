@@ -39,7 +39,13 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.industry_carbonprice = Var(
         m.t,
-        # bounds=lambda m: ,
+        # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
+        units=quant.unit("currency_unit/emissions_unit"),
+    )
+
+    m.industry_carbonprice_max = Var(
+        m.t,
+        # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
     )
 
@@ -70,6 +76,14 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
                 ),
                 "non-CE carbonprice industry",
+            ),
+
+            GlobalConstraint(
+                lambda m, t: (
+                    m.industry_carbonprice_max[t]
+                    == global_MAC_industry(m.max_relative_abatement, m, t)
+                ),
+                "limit to carbonprice industry",
             ),
 
             GlobalConstraint(
