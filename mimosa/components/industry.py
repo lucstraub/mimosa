@@ -37,6 +37,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         units=quant.unit("currency_unit"),
     )
 
+    m.industry_carbonprice = Var(
+        m.t,
+        # bounds=lambda m: ,
+        units=quant.unit("currency_unit/emissions_unit"),
+    )
+
     m.gamma_scaling = Param(doc="::industry.gamma_scaling")
 
     # # industry and non-industry scaling factors
@@ -60,12 +66,20 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: (
+                    m.industry_carbonprice[t]
+                    == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                ),
+                "non-CE carbonprice industry",
+            ),
+
+            GlobalConstraint(
+                lambda m, t: (
                     (
                         sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
                         / sum(m.L(m.year(t), x) for x in m.regions)
                     )
                     # m.carbonprice[t, "USA"]
-                    == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                    >= m.industry_carbonprice[t]
                 ),
                 "carbonprice industry emissions abatement matching",
             ),
