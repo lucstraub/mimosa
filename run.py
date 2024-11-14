@@ -16,7 +16,7 @@ params["emissions"]["inertia"]["global"] = -0.05
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
-params["industry"]["gamma_scaling"] = 1.034
+params["industry"]["gamma_scaling"] = 0.985
 
 #---------------------------------------------------
 # Uncomment below code for single scenario runs
@@ -41,7 +41,7 @@ model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{param
 
 # # gamma_scaling_factors = np.arange(0.6, 1.5, 0.2)
 # # gamma_scaling_factors = [1.03, 1.04, 1.05]
-# gamma_scaling_factors = [1.034]
+# gamma_scaling_factors = [0.985]
 # carbon_budgets = np.arange(200, 1501, 100)
 
 # for scaling in gamma_scaling_factors:
@@ -52,7 +52,7 @@ model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{param
     
 #         model = MIMOSA(params)
 #         model.solve()
-#         model.save(f"calibration/with_gamma_scaling/industry_gamma_{scaling:.3f}_cb_{budget}")
+#         model.save(f"calibration/detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}")
 
 # # Calculate the NPV of the mitigation costs for each run:
  
@@ -68,7 +68,7 @@ model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{param
 #     print(f"Gamma scaling factor: {scaling:.3f}")
 
 #     for budget in carbon_budgets:
-#         outp = pd.read_csv(f"output/calibration/with_gamma_scaling/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
+#         outp = pd.read_csv(f"output/calibration/detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
 #         global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs", "2020":].sum(
 #             axis=0
 #         )
@@ -79,4 +79,4 @@ model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{param
 #         print(f"NPV of mitigation costs for {budget} GtCO2: {npv_costs:.1%}")
 
 #     results = pd.DataFrame(results)
-#     results.to_csv(f"output/calibration/with_gamma_scaling/industry_gamma_{scaling:.3f}_npv_costs.csv", index=False)
+#     results.to_csv(f"output/calibration/industry_gamma_{scaling:.3f}_npv_costs.csv", index=False)
