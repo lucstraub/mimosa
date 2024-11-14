@@ -620,3 +620,10 @@ industry:
     min: 0
     max: 1
     default: 0.55
+
+  max_relative_abatement:
+    descr: Upper limit for relative abatement in industry sector
+    type: float
+    min: 0
+    max: 2
+    default: 0.95

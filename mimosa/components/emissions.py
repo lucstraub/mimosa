@@ -126,6 +126,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     m.baseline_carbon_intensity = Param(doc="::emissions.baseline carbon intensity")
     m.cumulative_emissions_trapz = Param(doc="::emissions.cumulative_emissions_trapz")
     m.industry_scaling_baseline = Param(doc="::industry.industry_scaling_baseline")
+    m.max_relative_abatement = Param(doc="::industry.max_relative_abatement")
     m.basic_material_scaling_baseline = Param(doc="::industry.basic_material_scaling_baseline")
 
     "Variables"
@@ -236,6 +237,13 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 if t > 0
                 else Constraint.Skip,
                 "global_industry_abatement_non-CE",
+            ),
+            GlobalConstraint(
+                lambda m, t: m.emissions_industry_global_relative_abatement[t]
+                <= m.max_relative_abatement
+                if t > 0
+                else Constraint.Skip,
+                "global_industry_abatement_limit_non-CE",
             ),
             GlobalInitConstraint(
                 lambda m: m.emissions_industry_global_mitigation_final[0]
