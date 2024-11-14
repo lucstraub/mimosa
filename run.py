@@ -12,7 +12,7 @@ params["emissions"]["inertia"]["global"] = -0.05
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
-params['industry']['basic_material_scaling_baseline'] = 0.66 # based on Material Economics
+params['industry']['basic_material_scaling_baseline'] = 0.55 # 0.66 in EU based on Material Economics
 
 model1 = MIMOSA(params)
 model1.solve()
