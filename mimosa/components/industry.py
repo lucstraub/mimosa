@@ -36,6 +36,18 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         units=quant.unit("currency_unit"),
     )
 
+    m.industry_carbonprice = Var(
+        m.t,
+        # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
+        units=quant.unit("currency_unit/emissions_unit"),
+    )
+
+    m.industry_carbonprice_max = Var(
+        m.t,
+        # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
+        units=quant.unit("currency_unit/emissions_unit"),
+    )
+
     m.CE_mitigation_costs_industry = Var(
         m.t,
         m.regions,
@@ -71,12 +83,28 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: (
+                    m.industry_carbonprice[t]
+                    == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                ),
+                "non-CE carbonprice industry",
+            ),
+
+            GlobalConstraint(
+                lambda m, t: (
+                    m.industry_carbonprice_max[t]
+                    == global_MAC_industry(m.max_relative_abatement, m, t)
+                ),
+                "limit to carbonprice industry",
+            ),
+            
+            GlobalConstraint(
+                lambda m, t: (
                     (
                         sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
                         / sum(m.L(m.year(t), x) for x in m.regions)
                     )
                     # m.carbonprice[t, "USA"]
-                    == global_MAC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                    >= m.industry_carbonprice[t]
                 ),
                 "carbonprice industry emissions abatement matching",
             ),
@@ -98,7 +126,15 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     # m.carbonprice[t, "USA"]
                     >= m.CE_carbonprice[t]
                 ),
-                "carbonprice industry CE-based emissions abatement matching",
+                "carbonprice industry CE-based emissions abatement matching 1",
+            ),
+
+            GlobalConstraint(
+                lambda m, t: (
+                    m.industry_carbonprice[t]
+                    >= m.CE_carbonprice[t]
+                ),
+                "carbonprice industry CE-based emissions abatement matching 2",
             ),
         ]
     )
