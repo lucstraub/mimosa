@@ -11,7 +11,9 @@ from mimosa.common import (
     GeneralConstraint,
     GlobalConstraint,
     quant,
+    value
 )
+import pyomo.kernel as knl
 
 def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     """Industry equations and constraints
@@ -59,7 +61,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.CE_carbonprice = Var(
         m.t,
-        # bounds=lambda m: (-0.105085, 0.105085), #based on Material Economics abatement curve, adjusted to 2005USD
+        bounds=lambda m: (0, None),
         units=quant.unit("currency_unit/emissions_unit"),
     )
 
@@ -116,9 +118,21 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: (
                     m.CE_carbonprice[t]
-                    == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                    >= global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                    # currently not exactly assigned but calculated as bigger or equal, having the effect that the model may choose CE carbon prices
+                    # that are higher than the MAC curve would suggest (it should minimize them nevertheless)
                 ),
                 "CE carbonprice industry",
+            ),
+
+            GlobalConstraint(
+                lambda m, t: (
+                    (m.CE_carbonprice[t] <= 200 * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
+                    if value(m.high_CE_cost)
+                    else
+                    (m.CE_carbonprice[t] <= 100 * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
+                ),
+                "CE carbonprice industry upper bound",
             ),
 
             GlobalConstraint(
@@ -156,6 +170,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     else (
                         m.CE_max_abatement[t] == 0.4 + (0.2 / 50) * (m.year(t) - 2050) #linear approximation after 2050
                         # this currently also includes 2020 which is not correct but avoids a division by zero error
+                        # this has no effect on the results as the year 2020 is set to 0 abatement and 0 carbon price
                     )
                 ),
                 "CE abatement curve time-dependent maximum abatement",
@@ -183,17 +198,23 @@ def global_AC_industry(a, m, t):
 def global_MAC_industry_CE(a, m, t):
     conversion_factor = 1.0508474576271185 / 1000 #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
 
+    #based on Material Economics abatement curve, adjusted to 2005USD
     if m.high_CE_cost:
-        return conversion_factor * ((200 / m.CE_max_abatement[t]) * a) #based on Material Economics abatement curve, adjusted to 2005USD
+        return conversion_factor * ((200 / m.CE_max_abatement[t]) * a) # high cost scenario: max price = 200 USD/tCO2, min price = 0 USD/tCO2
     else:
-        return conversion_factor * ((100 / m.CE_max_abatement[t]) * a) #based on Material Economics abatement curve, adjusted to 2005USD
-        # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a - 100) #based on Material Economics abatement curve, adjusted to 2005USD
+        mid_point = m.CE_max_abatement[t] / 2
+        return conversion_factor * (100 / mid_point) * (a - mid_point) # max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
+        # return conversion_factor * ((100 / m.CE_max_abatement[t]) * a) # max price = 100 USD/tCO2, min price = 0 USD/tCO2
+        # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a - 100) # max price = 100 USD/tCO2, min price = -100 USD/tCO2
 
 def global_AC_industry_CE(a, m, t):
     conversion_factor = 1.0508474576271185 / 1000 #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
 
+    #based on Material Economics abatement curve, adjusted to 2005USD
     if m.high_CE_cost:
-        return conversion_factor * (200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) #based on Material Economics abatement curve, adjusted to 2005USD
+        return conversion_factor * (200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) # high cost scenario: max price = 200 USD/tCO2, min price = 0 USD/tCO2
     else:
-        return conversion_factor * (100 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) #based on Material Economics abatement curve, adjusted to 2005USD
-        # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) - 100 * a ** (0 + 1) / (0 + 1)) #based on Material Economics abatement curve, adjusted to 2005USD
+        mid_point = m.CE_max_abatement[t] / 2
+        return conversion_factor * (100 / mid_point) * (a ** (1 + 1) / (1 + 1) - mid_point * a ** (0 + 1) / (0 + 1)) # max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
+        # return conversion_factor * (100 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) # max price = 100 USD/tCO2, min price = 0 USD/tCO2
+        # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) - 100 * a ** (0 + 1) / (0 + 1)) # max price = 100 USD/tCO2, min price = -100 USD/tCO2
