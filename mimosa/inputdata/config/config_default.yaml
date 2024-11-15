@@ -634,3 +634,10 @@ industry:
     min: 0
     max: 2
     default: 1
+  
+  high_CE_cost:
+    descr: >-
+      If true, the model is running a scenario with a CE MAC curve building on higher cost assumption.
+      If false, it is running a scenario with a CE MAC curve building on lower cost assumption.
+    type: bool
+    default: False
