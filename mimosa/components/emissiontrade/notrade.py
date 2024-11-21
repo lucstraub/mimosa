@@ -5,7 +5,7 @@ Type: no trade
 """
 
 from typing import Sequence
-from mimosa.common import AbstractModel, GeneralConstraint, RegionalConstraint, Param
+from mimosa.common import AbstractModel, GeneralConstraint, RegionalConstraint, Param, value
 from mimosa.components.industry import global_AC_industry, global_AC_industry_CE
 from mimosa.components.mitigation import AC
 
@@ -58,11 +58,26 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
 
             RegionalConstraint(
-                lambda m, t, r: m.CE_mitigation_costs_industry[t, r]
-                == (
-                    (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
-                    * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
-                    * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
+                lambda m, t, r: (
+                    (
+                        m.CE_mitigation_costs_industry[t, r]
+                        == (
+                            (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
+                            * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                            * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
+                        )
+                    )
+                    if value(m.high_CE_cost)
+                    else
+                    (
+                        m.CE_mitigation_costs_industry[t, r]
+                        == (
+                            (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
+                            * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t], m, t) # currently using the upper half of the range of CE-related emissions abatement
+                            # * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                            * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
+                        )
+                    )
                 ),
                 "CE_mitigation_costs_industry",
             ),
