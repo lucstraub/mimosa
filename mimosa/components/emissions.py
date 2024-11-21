@@ -221,8 +221,6 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     m.emissions_industry_global_mitigation_CE[t]
                     == (1 - m.emissions_industry_global_relative_reduction_from_CE[t] * m.basic_material_scaling_baseline) # applying reduction through CE to basic material production share of industry emissions
                     * m.emissions_industry_global_baseline[t]
-                    if t > 0
-                    else Constraint.Skip
                 ),
                 "global_industry_abatement_CE",
             ),
