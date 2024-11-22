@@ -25,8 +25,9 @@ model1 = MIMOSA(params)
 # print("Value of Gamma: ", value(model1.concrete_model.MAC_gamma))
 model1.solve()
 # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_with_nonCE_MAC_curves_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
-    
+model1.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+# model1.save(f"testrun_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+
 # model1.plot(filename="result")
 
 #---------------------------------------------------
