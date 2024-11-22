@@ -22,7 +22,7 @@ params["emissions"]["non increasing emissions after 2100"] = False # changed con
 model1 = MIMOSA(params)
 model1.solve()
 # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-model1.save(f"testrun_budget{params['emissions']['carbonbudget']}_base_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+model1.save(f"result_base_budget{params['emissions']['carbonbudget']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
 #---------------------------------------------------
 # Uncomment below code for total mitigation cost calibration runs in base scenario
