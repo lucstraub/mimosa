@@ -42,7 +42,7 @@ model1.save(f"result_base_budget{params['emissions']['carbonbudget']}_run{dateti
  
 #     model = MIMOSA(params)
 #     model.solve()
-#     model.save(f"calibration/base_cb_{budget}")
+#     model.save(f"calibration/base_detailed_budget_data/base_cb_{budget}")
 
 # # Calculate the NPV of the mitigation costs for each run:
  
@@ -55,7 +55,7 @@ model1.save(f"result_base_budget{params['emissions']['carbonbudget']}_run{dateti
 # results = []
 
 # for budget in carbon_budgets:
-#     outp = pd.read_csv(f"output/calibration/base_cb_{budget}.csv")
+#     outp = pd.read_csv(f"output/calibration/base_detailed_budget_data/base_cb_{budget}.csv")
 #     global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs", "2020":].sum(
 #         axis=0
 #     )
