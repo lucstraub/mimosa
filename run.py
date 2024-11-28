@@ -27,7 +27,6 @@ model1 = MIMOSA(params)
 model1.solve()
 # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
 model1.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
-# model1.save(f"testrun_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
 # model1.plot(filename="result")
 
@@ -54,7 +53,7 @@ model1.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{
     
 #         model = MIMOSA(params)
 #         model.solve()
-#         model.save(f"calibration/detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}")
+#         model.save(f"calibration/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}")
 
 # # Calculate the NPV of the mitigation costs for each run:
  
@@ -70,7 +69,7 @@ model1.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{
 #     print(f"Gamma scaling factor: {scaling:.3f}")
 
 #     for budget in carbon_budgets:
-#         outp = pd.read_csv(f"output/calibration/detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
+#         outp = pd.read_csv(f"output/calibration/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
 #         global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs", "2020":].sum(
 #             axis=0
 #         )
