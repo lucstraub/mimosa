@@ -13,7 +13,7 @@ params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
 params['industry']['basic_material_scaling_baseline'] = 0.55 # 0.66 in EU based on Material Economics
-params["industry"]["gamma_scaling"] = 0.985
+params["industry"]["gamma_scaling"] = 0.99
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 
