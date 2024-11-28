@@ -15,6 +15,7 @@ params["emissions"]["inertia"]["global"] = -0.05
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
+params["model"]["welfare module"] = "cost_minimising"
 
 #---------------------------------------------------
 # Uncomment below code for single base scenario runs
