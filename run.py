@@ -22,13 +22,13 @@ params["model"]["welfare module"] = "cost_minimising"
 #---------------------------------------------------
 # Uncomment below code for single scenario runs
 
-# model1 = MIMOSA(params)
-# # print("Value of Gamma: ", value(model1.concrete_model.MAC_gamma))
-# model1.solve()
-# # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-# model1.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+model1 = MIMOSA(params)
+# print("Value of Gamma: ", value(model1.concrete_model.MAC_gamma))
+model1.solve()
+# model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
+model1.save(f"testGlobalNonIndustry_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
-# # model1.plot(filename="result")
+# model1.plot(filename="result")
 
 #---------------------------------------------------
 # Uncomment below code for total mitigation cost/ gamma scaling factor calibration runs in industry scenario
@@ -85,36 +85,36 @@ params["model"]["welfare module"] = "cost_minimising"
 #---------------------------------------------------
 # Uncomment below code for total mitigation cost calibration runs
 
-carbon_budgets = np.arange(600, 701, 10)
+# carbon_budgets = np.arange(600, 701, 10)
 
-for budget in carbon_budgets:
-    params["emissions"]["carbonbudget"] = f"{budget} GtCO2"
+# for budget in carbon_budgets:
+#     params["emissions"]["carbonbudget"] = f"{budget} GtCO2"
 
-    model = MIMOSA(params)
-    model.solve()
-    model.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}")
+#     model = MIMOSA(params)
+#     model.solve()
+#     model.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}")
 
-# Calculate the NPV of the mitigation costs for each run:
+# # Calculate the NPV of the mitigation costs for each run:
  
-def npv(values, discount_rate):
-    years = values.index.astype(float)
-    t = years - years[0]
-    discount_factor = np.exp(-discount_rate * t)
-    return np.trapz(values * discount_factor, t)
+# def npv(values, discount_rate):
+#     years = values.index.astype(float)
+#     t = years - years[0]
+#     discount_factor = np.exp(-discount_rate * t)
+#     return np.trapz(values * discount_factor, t)
 
-results = []
+# results = []
 
-for budget in carbon_budgets:
-    outp = pd.read_csv(f"output/result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv")
-    global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs", "2020":].sum(
-        axis=0
-    )
-    global_gdp_gross = outp.loc[outp["Variable"] == "GDP_gross", "2020":].sum(axis=0)
-    r = 0.03
-    npv_costs_abs = npv(global_mitig_costs, r)
-    npv_costs_rel = npv(global_mitig_costs, r) / npv(global_gdp_gross, r)
-    results.append({"budget": budget, "npv_costs_abs": npv_costs_abs, "npv_costs_rel": npv_costs_rel})
-    print(f"NPV of mitigation costs for 500 GtCO2 CE base scenario: {npv_costs_abs:.1f} trillion*usd ({npv_costs_rel:.8%} of GDP)")
+# for budget in carbon_budgets:
+#     outp = pd.read_csv(f"output/result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv")
+#     global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs", "2020":].sum(
+#         axis=0
+#     )
+#     global_gdp_gross = outp.loc[outp["Variable"] == "GDP_gross", "2020":].sum(axis=0)
+#     r = 0.03
+#     npv_costs_abs = npv(global_mitig_costs, r)
+#     npv_costs_rel = npv(global_mitig_costs, r) / npv(global_gdp_gross, r)
+#     results.append({"budget": budget, "npv_costs_abs": npv_costs_abs, "npv_costs_rel": npv_costs_rel})
+#     print(f"NPV of mitigation costs for 500 GtCO2 CE base scenario: {npv_costs_abs:.1f} trillion*usd ({npv_costs_rel:.8%} of GDP)")
 
-results = pd.DataFrame(results)
-results.to_csv(f"output/npv_costs_nonCE_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv", index=False)
+# results = pd.DataFrame(results)
+# results.to_csv(f"output/npv_costs_nonCE_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv", index=False)
