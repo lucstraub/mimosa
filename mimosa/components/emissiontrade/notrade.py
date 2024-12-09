@@ -5,7 +5,7 @@ Type: no trade
 """
 
 from typing import Sequence
-from mimosa.common import AbstractModel, GeneralConstraint, RegionalConstraint, Param
+from mimosa.common import AbstractModel, GeneralConstraint, GlobalConstraint, RegionalConstraint, Param, Constraint
 from mimosa.components.industry import global_AC_industry
 from mimosa.components.mitigation import AC
 
@@ -32,33 +32,31 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     constraints.extend(
         [
             RegionalConstraint(
-                lambda m, t, r: m.mitigation_costs[t, r]
-                == (
-                    m.mitigation_costs_nonindustry[t, r]
-                    + m.mitigation_costs_industry[t, r]
+                lambda m, t, r: (
+                    m.mitigation_costs_total_regional[t, r]
+                    == (
+                        (m.mitigation_costs_other_global[t] + m.mitigation_costs_industry_global[t])
+                        * (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
+                        # population-weighted regional mitigation costs assignment
+                    )
                 ),
-                #sector-feature
-                # == AC(m.emissions_other_regional_relative_abatement[t, r], m, t, r) * m.emissions_other_regional_baseline[t, r],
-                # == AC(m.emissions_other_regional_relative_abatement[t, r], m, t, r) * m.emissions_total_regional_baseline[t, r],
                 "mitigation_costs",
             ),
 
-            RegionalConstraint(
-                lambda m, t, r: m.mitigation_costs_industry[t, r]
+            GlobalConstraint(
+                lambda m, t: m.mitigation_costs_industry_global[t]
                 == (
-                    (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
-                    * global_AC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
-                    * m.emissions_industry_global_baseline[t]
+                    global_AC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                    * m.industry_scaling_baseline * sum(m.emissions_total_regional_baseline[t,r] for r in m.regions)
                 ),
                 "mitigation_costs_industry",
             ),
 
-            RegionalConstraint(
-                lambda m, t, r: m.mitigation_costs_nonindustry[t, r]
+            GlobalConstraint(
+                lambda m, t: m.mitigation_costs_other_global[t]
                 == (
-                    (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
-                    * AC(m.emissions_other_global_relative_abatement[t], m, t)
-                    * sum(m.emissions_total_regional_baseline[t, r] for r in m.regions)
+                    AC(m.emissions_other_global_relative_abatement[t], m, t)
+                    * (1 - m.industry_scaling_baseline) * sum(m.emissions_total_regional_baseline[t,r] for r in m.regions)
                 ),
                 "mitigation_costs_nonindustry",
             )
