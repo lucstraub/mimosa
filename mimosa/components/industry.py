@@ -88,7 +88,11 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.carbonprice[t]
+                    (
+                        sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
+                        / sum(m.L(m.year(t), x) for x in m.regions)
+                    )
+                    # m.carbonprice[t, "USA"]
                     >= m.industry_carbonprice[t]
                 ),
                 "carbonprice industry emissions abatement matching",

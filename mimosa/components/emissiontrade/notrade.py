@@ -34,7 +34,10 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             RegionalConstraint(
                 lambda m, t, r: m.mitigation_costs[t, r]
                 == (
-                    m.mitigation_costs_nonindustry[t, r]
+                    (
+                        AC(m.emissions_other_regional_relative_abatement[t, r], m, t, r)
+                        * m.emissions_other_regional_baseline[t, r]
+                    )
                     + m.mitigation_costs_industry[t, r]
                 ),
                 #sector-feature
@@ -52,16 +55,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 ),
                 "mitigation_costs_industry",
             ),
-
-            RegionalConstraint(
-                lambda m, t, r: m.mitigation_costs_nonindustry[t, r]
-                == (
-                    (m.L(m.year(t), r) / sum(m.L(m.year(t), x) for x in m.regions))
-                    * AC(m.emissions_other_global_relative_abatement[t], m, t)
-                    * sum(m.emissions_total_regional_baseline[t, r] for r in m.regions)
-                ),
-                "mitigation_costs_nonindustry",
-            )
         ]
     )
 

@@ -10,7 +10,6 @@ from mimosa.common import (
     Var,
     GeneralConstraint,
     GlobalConstraint,
-    GlobalInitConstraint,
     RegionalConstraint,
     RegionalInitConstraint,
     Constraint,
@@ -70,13 +69,6 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         initialize=0,
         units=quant.unit("currency_unit"),
     )
-    m.mitigation_costs_nonindustry = Var(
-        m.t,
-        m.regions,
-        # within=NonNegativeReals,
-        initialize=0,
-        units=quant.unit("currency_unit"),
-    )
     m.rel_mitigation_costs = Var(m.t, m.regions, units=quant.unit("fraction_of_GDP"))
     m.MAC_gamma = Param(doc="::economics.MAC.gamma")
     m.MAC_beta = Param(doc="::economics.MAC.beta")
@@ -86,6 +78,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     )  # Regional scaling of the MAC
     m.carbonprice = Var(
         m.t,
+        m.regions,
         bounds=lambda m: (0, 2 * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
     )
@@ -105,13 +98,13 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 >= (m.rel_mitigation_costs_min_level if t > 0 else 0.0),
                 "rel_mitigation_costs_non_negative",
             ),
-            GlobalConstraint(
-                lambda m, t: m.carbonprice[t]
-                == MAC(m.emissions_other_global_relative_abatement[t], m, t),
+            RegionalConstraint(
+                lambda m, t, r: m.carbonprice[t, r]
+                == MAC(m.emissions_other_regional_relative_abatement[t, r], m, t, r),
                 "carbonprice",
             ),
-            GlobalInitConstraint(
-                lambda m, r: m.carbonprice[0] == 0, "init_carbon_price"
+            RegionalInitConstraint(
+                lambda m, r: m.carbonprice[0, r] == 0, "init_carbon_price"
             ),
         ]
     )
@@ -225,7 +218,7 @@ def _get_learning_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 #################
 
 
-def MAC(a, m, t):
+def MAC(a, m, t, r):
     """
     $$
     \\text{carbon price}_{t,r} = \\text{factor}_{t,r} \\cdot \\gamma \\cdot \\left(\\text{rel. mitigation}_{t,r}\\right)^{\\beta},
@@ -248,11 +241,11 @@ def MAC(a, m, t):
     relative to the world average, we obtain a scaling factor for the MAC.
     """
     # factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
-    factor = m.learning_factor[t] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
     return factor * m.MAC_gamma * a ** m.MAC_beta
 
 
-def AC(a, m, t):
+def AC(a, m, t, r):
     # factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * m.non_industry_scaling_factor[t]
-    factor = m.learning_factor[t] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
+    factor = m.learning_factor[t] * m.MAC_scaling_factor[r] * 0.826856497088638 * m.gamma_scaling # fixed non-industry scaling factor calibrated to 2070 data
     return factor * m.MAC_gamma * a ** (m.MAC_beta + 1) / (m.MAC_beta + 1)
