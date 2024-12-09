@@ -204,10 +204,6 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 ),
                 "regional_non-industry_abatement",
             ),
-            GlobalInitConstraint(
-                lambda m: m.emissions_other_global_mitigation[0]
-                == sum(m.emissions_other_regional_baseline[0, r] for r in m.regions)
-            ),
             RegionalConstraint(
                 lambda m, t, r: m.emissions_other_regional_mitigation[t, r]
                 #sector-feature
