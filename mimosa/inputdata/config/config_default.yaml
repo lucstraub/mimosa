@@ -605,6 +605,7 @@ simulation:
 
 ##################
 
+#sector-feature
 industry:
   industry_scaling_baseline:
     descr: Percentage of baseline emissions for industry
@@ -626,24 +627,3 @@ industry:
     min: 0
     max: 2
     default: 0.95
-  
-    basic_material_scaling_baseline:
-    descr: Percentage of industry baseline emissions for basic materials production/ heavy industry
-    type: float
-    min: 0
-    max: 1
-    default: 0.55
-  
-  CE_scenario:
-    descr: >-
-      If true, the model is running a scenario with a CE MAC curve.
-      If false, it is running a scenario without a CE MAC curve.
-    type: bool
-    default: False
-  
-  high_CE_cost:
-    descr: >-
-      If true, the model is running a scenario with a CE MAC curve building on higher cost assumption.
-      If false, it is running a scenario with a CE MAC curve building on lower cost assumption.
-    type: bool
-    default: False
