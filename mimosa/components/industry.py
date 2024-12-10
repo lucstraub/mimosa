@@ -11,6 +11,7 @@ from mimosa.common import (
     GeneralConstraint,
     GlobalConstraint,
     quant,
+    soft_max
 )
 
 def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
@@ -72,6 +73,10 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 lambda m, t: (
                     m.nonindustry_carbonprice[t]
                     >= m.industry_carbonprice[t]
+                    # (soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000) - m.industry_carbonprice[t]) ** 2
+                    # <= 0.0001
+                    # m.industry_carbonprice[t]
+                    # == soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000)
                 ),
                 "sectoral carbon price linkage",
             ),
