@@ -13,7 +13,8 @@ from mimosa.common import (
     GlobalInitConstraint,
     Constraint,
     quant,
-    value
+    value,
+    soft_max
 )
 import pyomo.kernel as knl
 
@@ -35,7 +36,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.non_CE_mitigation_costs_industry = Var(
         m.t,
-        m.regions,
         # within=NonNegativeReals,
         initialize=0,
         units=quant.unit("currency_unit"),
@@ -55,7 +55,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.CE_mitigation_costs_industry = Var(
         m.t,
-        m.regions,
         # within=NonNegativeReals,
         initialize=0,
         units=quant.unit("currency_unit"),
@@ -82,22 +81,22 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.industry_carbonprice_max[t] # not needed for modeling (enforced through max_relative_abatement) but for easier output analysis
-                    == global_MAC_industry(m.max_relative_abatement, m, t)
+                    m.industry_carbonprice_max[t]
+                    == global_MAC_industry(m.industry_max_relative_abatement, m, t)
                 ),
                 "limit to carbonprice industry",
             ),
             
             GlobalConstraint(
                 lambda m, t: (
-                    (
-                        sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
-                        / sum(m.L(m.year(t), x) for x in m.regions)
-                    )
-                    # m.carbonprice[t, "USA"]
+                    m.nonindustry_carbonprice[t]
                     >= m.industry_carbonprice[t]
+                    # (soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000) - m.industry_carbonprice[t]) ** 2
+                    # <= 0.0001
+                    # m.industry_carbonprice[t]
+                    # == soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000)
                 ),
-                "carbonprice industry emissions abatement matching",
+                "sectoral non-CE carbon price linkage",
             ),
 
             GlobalConstraint(
@@ -141,11 +140,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             GlobalConstraint(
                 lambda m, t: (
-                    (
-                        sum(m.L(m.year(t), r) * m.carbonprice[t, r] for r in m.regions)
-                        / sum(m.L(m.year(t), x) for x in m.regions)
-                    )
-                    # m.carbonprice[t, "USA"]
+                    m.nonindustry_carbonprice[t]
                     >= m.CE_carbonprice[t]
                 ),
                 "carbonprice industry CE-based emissions abatement matching 1",
