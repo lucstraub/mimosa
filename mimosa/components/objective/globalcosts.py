@@ -48,7 +48,7 @@ def get_constraints(m: AbstractModel) -> Tuple[Objective, Sequence[GeneralConstr
                     + m.dt
                     * exp(-m.PRTP * (m.year(t) - m.beginyear))
                     * (
-                        sum(m.mitigation_costs[t, r] for r in m.regions)
+                        sum(m.mitigation_costs_regional[t, r] for r in m.regions)
                         + sum(
                             m.damage_costs[t, r] * m.GDP_gross[t, r] for r in m.regions
                         )

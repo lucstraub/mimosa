@@ -31,7 +31,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.mitigation_costs_industry = Var(
         m.t,
-        m.regions,
         # within=NonNegativeReals,
         initialize=0,
         units=quant.unit("currency_unit"),
@@ -51,23 +50,6 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.gamma_scaling = Param(doc="::industry.gamma_scaling")
 
-    # # industry and non-industry scaling factors
-    # m.industry_scaling_factor = Var(m.t)
-    # m.non_industry_scaling_factor = Var(m.t)
-    # constraints.extend(
-    #     [
-    #         GlobalConstraint(
-    #             lambda m, t: m.industry_scaling_factor[t] == 0.011355298773375551 * m.year(t) - 22.287871097393577,
-    #             "industry scaling factor",
-    #         ),
-
-    #         GlobalConstraint(
-    #             lambda m, t: m.non_industry_scaling_factor[t] == -0.006245140521591652 * m.year(t) + 13.77368790184011,
-    #             "non-industry scaling factor",
-    #         ),
-    #     ]
-    # )
-
     constraints.extend(
         [
             GlobalConstraint(
@@ -81,17 +63,17 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: (
                     m.industry_carbonprice_max[t]
-                    == global_MAC_industry(m.max_relative_abatement, m, t)
+                    == global_MAC_industry(m.industry_max_relative_abatement, m, t)
                 ),
                 "limit to carbonprice industry",
             ),
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.carbonprice[t]
+                    m.nonindustry_carbonprice[t]
                     >= m.industry_carbonprice[t]
                 ),
-                "carbonprice industry emissions abatement matching",
+                "sectoral carbon price linkage",
             ),
         ]
     )

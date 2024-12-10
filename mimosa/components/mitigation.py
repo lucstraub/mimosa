@@ -63,7 +63,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     constraints = []
 
     # Mitigation costs and MAC
-    m.mitigation_costs = Var(
+    m.mitigation_costs_regional = Var(
         m.t,
         m.regions,
         # within=NonNegativeReals,
@@ -72,7 +72,6 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     )
     m.mitigation_costs_nonindustry = Var(
         m.t,
-        m.regions,
         # within=NonNegativeReals,
         initialize=0,
         units=quant.unit("currency_unit"),
@@ -84,7 +83,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         m.regions,
         doc=lambda params: f'regional::MAC.{params["economics"]["MAC"]["regional calibration factor"]}',
     )  # Regional scaling of the MAC
-    m.carbonprice = Var(
+    m.nonindustry_carbonprice = Var(
         m.t,
         bounds=lambda m: (0, 2 * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
@@ -96,7 +95,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             RegionalConstraint(
                 lambda m, t, r: m.rel_mitigation_costs[t, r]
-                == m.mitigation_costs[t, r] / m.GDP_gross[t, r],
+                == m.mitigation_costs_regional[t, r] / m.GDP_gross[t, r],
                 "rel_mitigation_costs",
                 doc="$$ \\text{rel_mitigation_costs}_{t,r} = \\frac{\\text{mitigation_costs}_{t,r}}{\\text{GDP_gross}_{t,r}} $$",
             ),
@@ -106,12 +105,12 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "rel_mitigation_costs_non_negative",
             ),
             GlobalConstraint(
-                lambda m, t: m.carbonprice[t]
+                lambda m, t: m.nonindustry_carbonprice[t]
                 == MAC(m.emissions_other_global_relative_abatement[t], m, t),
-                "carbonprice",
+                "carbonprice non-industry",
             ),
             GlobalInitConstraint(
-                lambda m, r: m.carbonprice[0] == 0, "init_carbon_price"
+                lambda m: m.nonindustry_carbonprice[0] == 0, "init_carbon_price non-industry"
             ),
         ]
     )
@@ -122,7 +121,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: m.global_rel_mitigation_costs[t]
-                == sum(m.mitigation_costs[t, r] for r in m.regions)
+                == sum(m.mitigation_costs_regional[t, r] for r in m.regions)
                 / sum(m.GDP_gross[t, r] for r in m.regions),
                 "global_rel_mitigation_costs",
             )
@@ -144,7 +143,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 lambda m, t: (
                     m.global_emission_reduction_per_cost_unit[t]
                     == sum(m.emissions_total_regional_absolute_reduction[t, r] for r in m.regions)
-                    / soft_min(sum(m.mitigation_costs[t, r] for r in m.regions))
+                    / soft_min(sum(m.mitigation_costs_regional[t, r] for r in m.regions))
                     if t > 0
                     else Constraint.Skip
                 ),
@@ -153,7 +152,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: (
                     m.global_cost_per_emission_reduction_unit[t]
-                    == sum(m.mitigation_costs[t, r] for r in m.regions)
+                    == sum(m.mitigation_costs_regional[t, r] for r in m.regions)
                     / soft_min(
                         sum(m.emissions_total_regional_absolute_reduction[t, r] for r in m.regions)
                     )
