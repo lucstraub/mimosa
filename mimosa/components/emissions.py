@@ -539,14 +539,25 @@ def _get_inertia_and_budget_constraints(
             # Global and regional inertia constraints:
             GlobalConstraint(
                 lambda m, t: (
-                    m.emissions_total_global_mitigation[t] - m.emissions_total_global_mitigation[t - 1]
+                    m.emissions_industry_global_mitigation[t] - m.emissions_industry_global_mitigation[t - 1]
                     >= m.dt
                     * m.inertia_global
-                    * sum(m.baseline_emissions(m.year(0), r) for r in m.regions)
+                    * m.emissions_industry_global_baseline[t]
                     if value(m.inertia_global) is not False and t > 0
                     else Constraint.Skip
                 ),
-                name="global_inertia",
+                name="global_inertia industry",
+            ),
+            GlobalConstraint(
+                lambda m, t: (
+                    m.emissions_other_global_mitigation[t] - m.emissions_other_global_mitigation[t - 1]
+                    >= m.dt
+                    * m.inertia_global
+                    * m.emissions_other_global_baseline[t]
+                    if value(m.inertia_global) is not False and t > 0
+                    else Constraint.Skip
+                ),
+                name="global_inertia non-industry",
             ),
             RegionalConstraint(
                 lambda m, t, r: (
