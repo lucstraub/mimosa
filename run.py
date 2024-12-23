@@ -42,7 +42,7 @@ elif run_type == 'gamma_calibration':
     params["economics"]["damages"]["ignore damages"] = True
     
     try:
-        os.mkdir("output/calibration")
+        os.mkdir("output/calibration_gamma")
     except FileExistsError:
         pass
 
@@ -60,7 +60,7 @@ elif run_type == 'gamma_calibration':
         
             model = MIMOSA(params)
             model.solve()
-            model.save(f"calibration/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}")
+            model.save(f"calibration_gamma/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}")
 
     # Calculate the NPV of the mitigation costs for each run:
     
@@ -76,7 +76,7 @@ elif run_type == 'gamma_calibration':
         print(f"Gamma scaling factor: {scaling:.3f}")
 
         for budget in carbon_budgets:
-            outp = pd.read_csv(f"output/calibration/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
+            outp = pd.read_csv(f"output/calibration_gamma/industry_detailed_budget_data/industry_gamma_{scaling:.3f}_cb_{budget}.csv")
             global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs_regional", "2020":].sum(
                 axis=0
             )
@@ -87,7 +87,7 @@ elif run_type == 'gamma_calibration':
             print(f"NPV of mitigation costs for {budget} GtCO2: {npv_costs:.1%}")
 
         results = pd.DataFrame(results)
-        results.to_csv(f"output/calibration/industry_gamma_{scaling:.3f}_npv_costs.csv", index=False)
+        results.to_csv(f"output/calibration_gamma/industry_gamma_{scaling:.3f}_npv_costs.csv", index=False)
         
     #---------------------------------------------------
 
@@ -101,7 +101,7 @@ elif run_type == 'cost_calibration':
 
         model = MIMOSA(params)
         model.solve()
-        model.save(f"result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}")
+        model.save(f"calibration_cost/result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}")
 
     # Calculate the NPV of the mitigation costs for each run:
     
@@ -115,7 +115,7 @@ elif run_type == 'cost_calibration':
 
     for budget in carbon_budgets:
         params["emissions"]["carbonbudget"] = f"{budget} GtCO2"
-        outp = pd.read_csv(f"output/result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv")
+        outp = pd.read_csv(f"output/calibration_cost/result_nonCE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv")
         global_mitig_costs = outp.loc[outp["Variable"] == "mitigation_costs_regional", "2020":].sum(
             axis=0
         )
@@ -127,4 +127,4 @@ elif run_type == 'cost_calibration':
         print(f"NPV of mitigation costs for {budget} GtCO2 CE base scenario: {npv_costs_abs:.1f} trillion*usd ({npv_costs_rel:.8%} of GDP)")
 
     results = pd.DataFrame(results)
-    results.to_csv(f"output/npv_costs_nonCE_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv", index=False)
+    results.to_csv(f"output/calibration_cost/npv_costs_nonCE_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv", index=False)
