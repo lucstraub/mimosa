@@ -472,6 +472,7 @@ def _get_inertia_and_budget_constraints(
 
     m.budget = Param(doc="::emissions.carbonbudget")
     m.inertia_global = Param(doc="::emissions.inertia.global")
+    m.inertia_global_reverse = Param(doc="::emissions.inertia.global_reverse")
     m.inertia_regional = Param(doc="::emissions.inertia.regional")
     m.global_min_level = Param(doc="::emissions.global min level")
     m.regional_min_level = Param(doc="::emissions.regional min level")
@@ -513,6 +514,17 @@ def _get_inertia_and_budget_constraints(
                     else Constraint.Skip
                 ),
                 name="global_inertia",
+            ),
+            GlobalConstraint(
+                lambda m, t: (
+                    m.global_emissions[t] - m.global_emissions[t - 1]
+                    <= m.dt
+                    * m.inertia_global_reverse
+                    * sum(m.baseline_emissions(m.year(0), r) for r in m.regions)
+                    if value(m.inertia_global_reverse) is not False and t > 0
+                    else Constraint.Skip
+                ),
+                name="global_inertia_reverse",
             ),
             RegionalConstraint(
                 lambda m, t, r: (

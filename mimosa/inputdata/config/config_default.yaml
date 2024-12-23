@@ -283,6 +283,14 @@ emissions:
     regional:
       <<: *inertia_description
       default: -0.05
+    global_reverse:
+      descr: >-
+        Maximum recovery speed, in % of initial emissions (should be positive)
+        Can also be false, then no inertia limit is imposed
+      type: float
+      min: 0
+      default: False
+      can_be_false: True
 
   cumulative_emissions_trapz:
     descr: >-
