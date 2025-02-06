@@ -650,6 +650,13 @@ industry:
     type: bool
     default: False
   
+  max_CE_cost:
+    descr: Price of maximum CE-enabled reduction/most expensive CE strategy, setting cost level for CE interventions in industry sector
+    type: float
+    min: 0
+    max: 4500 #arbitrary number, can be adjusted
+    default: 100
+  
   CE_abatement_scaling:
     descr: Percentage of CE-enabled emissions abatement to account for CE strategies already considered in AR6-calibrated non-CE MAC curve for industry
     type: float

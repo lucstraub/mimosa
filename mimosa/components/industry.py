@@ -67,7 +67,8 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     )
 
     m.gamma_scaling = Param(doc="::industry.gamma_scaling")
-    m.high_CE_cost = Param(doc="::industry.high_CE_cost")
+    m.high_CE_cost = Param(doc="::industry.high_CE_cost") #boolean to distinguish between high and low cost scenario for CE measures
+    m.max_CE_cost = Param(doc="::industry.max_CE_cost")
 
     constraints.extend(
         [
@@ -130,10 +131,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             GlobalConstraint(
                 lambda m, t: (
-                    (m.CE_carbonprice[t] <= 200 * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
-                    if value(m.high_CE_cost)
-                    else
-                    (m.CE_carbonprice[t] <= 100 * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
+                    (m.CE_carbonprice[t] <= m.max_CE_cost * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
                 ),
                 "CE carbonprice industry upper bound",
             ),
@@ -223,10 +221,12 @@ def global_MAC_industry_CE(a, m, t):
 
     #based on Material Economics abatement curve, adjusted to 2005USD
     if m.high_CE_cost:
-        return conversion_factor * ((200 / m.CE_max_abatement[t]) * a) # high cost scenario: max price = 200 USD/tCO2, min price = 0 USD/tCO2
+        # high cost scenario: linear function, max price to be set (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
+        return conversion_factor * ((m.max_CE_cost / m.CE_max_abatement[t]) * a)
     else:
+        # default cost scenario: max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
         mid_point = m.CE_max_abatement[t] / 2
-        return conversion_factor * (100 / mid_point) * a # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity
+        return conversion_factor * (m.max_CE_cost / mid_point) * a # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity
         # return conversion_factor * (100 / mid_point) * (a - mid_point) # max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
         # return conversion_factor * ((100 / m.CE_max_abatement[t]) * a) # max price = 100 USD/tCO2, min price = 0 USD/tCO2
         # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a - 100) # max price = 100 USD/tCO2, min price = -100 USD/tCO2
@@ -236,12 +236,12 @@ def global_AC_industry_CE(a, m, t):
 
     #based on Material Economics abatement curve, adjusted to 2005USD
     if m.high_CE_cost:
-        # high cost scenario: max price = 200 USD/tCO2, min price = 0 USD/tCO2
-        return conversion_factor * (200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1)
+        # high cost scenario: linear function, max price to be set (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
+        return conversion_factor * (m.max_CE_cost / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1)
     else:
-        # max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
+        # default cost scenario: max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
         mid_point = m.CE_max_abatement[t] / 2
-        return conversion_factor * (100 / mid_point) * (a ** (1 + 1) / (1 + 1)) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity
+        return conversion_factor * (m.max_CE_cost / mid_point) * (a ** (1 + 1) / (1 + 1)) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity
         # return conversion_factor * (100 / mid_point) * ((a ** (1 + 1) / (1 + 1) - mid_point * a ** (0 + 1) / (0 + 1)) - (mid_point ** (1 + 1) / (1 + 1) - mid_point * mid_point ** (0 + 1) / (0 + 1))) # due to implementation complexity of piecewise linear function, the cost function is adjusted to start at mid-point of abatement curve (offsetting the negative cost up to midpoint)
         # return conversion_factor * (100 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) # max price = 100 USD/tCO2, min price = 0 USD/tCO2
         # return conversion_factor * ((200 / m.CE_max_abatement[t]) * a ** (1 + 1) / (1 + 1) - 100 * a ** (0 + 1) / (0 + 1)) # max price = 100 USD/tCO2, min price = -100 USD/tCO2
