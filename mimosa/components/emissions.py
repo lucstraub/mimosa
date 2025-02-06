@@ -152,7 +152,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         initialize=0,
         bounds=(0, 2.5),
     )
-    m.emissions_industry_global_relative_abatement = Var(
+    m.emissions_industry_global_relative_abatement_after_CE = Var(
         m.t, units=quant.unit("fraction_of_baseline_emissions"), #after CE measure reductions
         initialize=0,
         bounds=(0, 1),
@@ -218,7 +218,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             GlobalConstraint(
                 lambda m, t: m.emissions_industry_global_mitigation_final[t]
-                == (1 - m.emissions_industry_global_relative_abatement[t])
+                == (1 - m.emissions_industry_global_relative_abatement_after_CE[t])
                 * m.emissions_industry_global_mitigation_CE[t]
                 if t > 0
                 else Constraint.Skip,
@@ -229,7 +229,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 == m.emissions_industry_global_baseline[0]
             ),
             GlobalConstraint(
-                lambda m, t: m.emissions_industry_global_relative_abatement[t]
+                lambda m, t: m.emissions_industry_global_relative_abatement_after_CE[t]
                 <= m.industry_max_relative_abatement
                 if t > 0
                 else Constraint.Skip,

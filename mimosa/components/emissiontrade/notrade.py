@@ -41,7 +41,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: m.non_CE_mitigation_costs_industry[t]
                 == (
-                    global_AC_industry(m.emissions_industry_global_relative_abatement[t], m, t)
+                    global_AC_industry(m.emissions_industry_global_relative_abatement_after_CE[t], m, t)
                     * m.emissions_industry_global_mitigation_CE[t] #considering emissions after CE-related emissions abatement
                 ),
                 "non_CE_mitigation_costs_industry",
