@@ -22,8 +22,8 @@ params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 
-run_type = 'single'
-# choose either 'single' or 'CE_cost_sensitivity'
+run_type = 'CE_abatement_sensitivity'
+# choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
     # Below code for single scenario runs
@@ -55,3 +55,20 @@ elif run_type == 'CE_cost_sensitivity':
         model = MIMOSA(params)
         model.solve()
         model.save(f"CE_cost_sensitivity/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEcost{cost}")
+
+elif run_type == 'CE_abatement_sensitivity':
+    # Below code for CE cost sensitivity runs in high CE cost scenario
+    
+    try:
+        os.mkdir("output/CE_abatement_sensitivity")
+    except FileExistsError:
+        pass
+
+    CE_max_rel_abatement = [0.8, 0.48]
+
+    for abatement in CE_max_rel_abatement:
+        params["industry"]["CE_abatement_scaling"] = abatement
+
+        model = MIMOSA(params)
+        model.solve()
+        model.save(f"CE_abatement_sensitivity/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEabatement{abatement}")
