@@ -22,7 +22,7 @@ params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 
-run_type = 'CE_abatement_sensitivity'
+run_type = 'single'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
@@ -57,14 +57,14 @@ elif run_type == 'CE_cost_sensitivity':
         model.save(f"CE_cost_sensitivity/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEcost{cost}")
 
 elif run_type == 'CE_abatement_sensitivity':
-    # Below code for CE cost sensitivity runs in high CE cost scenario
+    # Below code for CE abatement sensitivity runs
     
     try:
         os.mkdir("output/CE_abatement_sensitivity")
     except FileExistsError:
         pass
 
-    CE_max_rel_abatement = [0.8, 0.48]
+    CE_max_rel_abatement = [0.75, 0.45]
 
     for abatement in CE_max_rel_abatement:
         params["industry"]["CE_abatement_scaling"] = abatement
