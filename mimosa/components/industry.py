@@ -41,13 +41,13 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         units=quant.unit("currency_unit"),
     )
 
-    m.industry_carbonprice = Var(
+    m.industry_carbonprice_marg = Var(
         m.t,
         # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
     )
 
-    m.industry_carbonprice_max = Var(
+    m.industry_carbonprice_marg_max = Var(
         m.t,
         # bounds=lambda m: (0, 2 * 1.46003066623869 * m.gamma_scaling * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
@@ -60,7 +60,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         units=quant.unit("currency_unit"),
     )
 
-    m.CE_carbonprice = Var(
+    m.CE_carbonprice_marg = Var(
         m.t,
         bounds=lambda m: (0, None),
         units=quant.unit("currency_unit/emissions_unit"),
@@ -74,82 +74,82 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: (
-                    m.industry_carbonprice[t]
+                    m.industry_carbonprice_marg[t]
                     == global_MAC_industry(m.emissions_industry_global_relative_abatement_after_CE[t], m, t)
                 ),
-                "non-CE carbonprice industry",
+                "marginal non-CE carbonprice industry",
             ),
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.industry_carbonprice_max[t]
+                    m.industry_carbonprice_marg_max[t]
                     == global_MAC_industry(m.industry_max_relative_abatement, m, t)
                 ),
-                "limit to carbonprice industry",
+                "limit to marginal non-CE carbonprice industry",
             ),
             
             GlobalConstraint(
                 lambda m, t: (
-                    m.nonindustry_carbonprice[t]
-                    >= m.industry_carbonprice[t]
-                    # (soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000) - m.industry_carbonprice[t]) ** 2
+                    m.nonindustry_carbonprice_marg[t]
+                    >= m.industry_carbonprice_marg[t]
+                    # (soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000) - m.industry_carbonprice_marg[t]) ** 2
                     # <= 0.0001
-                    # m.industry_carbonprice[t]
-                    # == soft_max(m.nonindustry_carbonprice[t], m.industry_carbonprice_max[t], 1000)
+                    # m.industry_carbonprice_marg[t]
+                    # == soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000)
                 ),
-                "sectoral non-CE carbon price linkage",
+                "sectoral marginal non-CE carbon price linkage",
             ),
 
             GlobalConstraint(
                 lambda m, t: (
                     (
-                        m.CE_carbonprice[t]
+                        m.CE_carbonprice_marg[t]
                         == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
                     )
                     if value(m.high_CE_cost)
                     else
                     (
-                        m.CE_carbonprice[t]
+                        m.CE_carbonprice_marg[t]
                         == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t], m, t) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity
                         # == global_MAC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
-                        # in case of issues with piecewise linear function, CE carbon price can be assigned lower limit of 0 and this constraint can be changed:
+                        # in case of issues with piecewise linear function, marginal CE carbon price can be assigned lower limit of 0 and this constraint can be changed:
                         # instead of exactly assigned global_MAC_industry_CE, it can be eased and calculated as bigger or equal, having the effect that the model may choose CE carbon prices
                         # that are higher than the MAC curve would suggest (it should minimize them nevertheless)
                     )
                 ),
-                "CE carbonprice industry",
+                "marginal CE carbonprice industry",
             ),
 
             # GlobalConstraint(
             #     lambda m, t: (
-            #         (m.CE_carbonprice[t] >= m.CE_max_abatement[t] / 2)
+            #         (m.CE_carbonprice_marg[t] >= m.CE_max_abatement[t] / 2)
             #         if value(m.high_CE_cost) is False # only in case of low cost scenario with piecewise linear function, assuming any abatement potential at zero cost is implemented, overcoming complexities of implementing piecewise linear function with ipopt solver
             #         else Constraint.Skip
             #     ),
-            #     "CE carbonprice industry lower bound",
+            #     "marginal CE carbonprice industry lower bound",
             # ),
 
             GlobalConstraint(
                 lambda m, t: (
-                    (m.CE_carbonprice[t] <= m.max_CE_cost * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
+                    (m.CE_carbonprice_marg[t] <= m.max_CE_cost * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
                 ),
-                "CE carbonprice industry upper bound",
+                "marginal CE carbonprice industry upper bound",
             ),
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.nonindustry_carbonprice[t]
-                    >= m.CE_carbonprice[t]
+                    m.nonindustry_carbonprice_marg[t]
+                    >= m.CE_carbonprice_marg[t]
                 ),
-                "carbonprice industry CE-based emissions abatement matching 1",
+                "marginal carbonprice industry CE-based emissions abatement linkage 1",
             ),
 
             GlobalConstraint(
                 lambda m, t: (
-                    m.industry_carbonprice[t]
-                    >= m.CE_carbonprice[t]
+                    m.industry_carbonprice_marg[t]
+                    >= m.CE_carbonprice_marg[t]
                 ),
-                "carbonprice industry CE-based emissions abatement matching 2",
+                "marginal carbonprice industry CE-based emissions abatement linkage 2",
             ),
         ]
     )
@@ -179,7 +179,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     # industry abatement cost curve time dynamics, based on Material Economics abatement curve, linear approximation
     m.CE_max_abatement = Var(m.t)
-    m.CE_abatement_scaling = Param(doc="::industry.CE_abatement_scaling") #reduces CE max abatement potential given overlaps with non-CE MAC curve
+    m.CE_abatement_scaling = Param(doc="::industry.CE_abatement_scaling") #reduces CE max abatement potential, e.g., given overlaps with non-CE MAC curve
     constraints.extend(
         [
             GlobalConstraint(

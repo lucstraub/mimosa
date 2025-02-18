@@ -128,6 +128,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     m.industry_scaling_baseline = Param(doc="::industry.industry_scaling_baseline")
     m.industry_max_relative_abatement = Param(doc="::industry.max_relative_abatement")
     m.basic_material_scaling_baseline = Param(doc="::industry.basic_material_scaling_baseline")
+    m.climate_policy_overlap = Param(doc="::industry.climate_policy_overlap")
 
     "Variables"
     #baseline emissions
@@ -219,7 +220,12 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             GlobalConstraint(
                 lambda m, t: m.emissions_industry_global_mitigation_final[t]
                 == (1 - m.emissions_industry_global_relative_abatement_after_CE[t])
-                * m.emissions_industry_global_mitigation_CE[t]
+                * (
+                    m.emissions_industry_global_mitigation_CE[t]
+                    + m.climate_policy_overlap # applying non-CE industry abatement on baseline that inlcudes overlap
+                    * m.emissions_industry_global_relative_reduction_from_CE[t] * m.basic_material_scaling_baseline # applying reduction through CE to basic material production share of industry emissions
+                    * m.emissions_industry_global_baseline[t]
+                )
                 if t > 0
                 else Constraint.Skip,
                 "global_industry_abatement_non-CE",

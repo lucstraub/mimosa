@@ -21,6 +21,7 @@ params["industry"]["CE_abatement_scaling"] = 1.0
 params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
+# params["industry"]["climate_policy_overlap"] = 0.24
 
 run_type = 'single'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
