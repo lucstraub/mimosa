@@ -236,7 +236,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
             ),
             GlobalConstraint(
                 lambda m, t: m.emissions_industry_global_mitigation_final[t]
-                >= m.industry_max_relative_abatement * m.emissions_industry_global_baseline[t]
+                >= (1 - m.industry_max_relative_abatement) * m.emissions_industry_global_baseline[t]
                 if t > 0
                 else Constraint.Skip,
                 "global_industry_abatement_limit",

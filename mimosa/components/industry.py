@@ -74,7 +74,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         [
             GlobalConstraint(
                 lambda m, t: (
-                    m.industry_carbonprice_marg[t]
+                    m.industry_carbonprice_marg[t] # this carbon price is assumed to implicitly include cost for some overlapping CE measures
                     == global_MAC_industry(m.emissions_industry_global_relative_abatement_after_CE[t], m, t)
                 ),
                 "marginal non-CE carbonprice industry",
@@ -92,17 +92,17 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "limit to marginal non-CE carbonprice industry",
             ),
             
-            GlobalConstraint(
-                lambda m, t: (
-                    m.nonindustry_carbonprice_marg[t]
-                    >= m.industry_carbonprice_marg[t]
-                    # (soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000) - m.industry_carbonprice_marg[t]) ** 2
-                    # <= 0.0001
-                    # m.industry_carbonprice_marg[t]
-                    # == soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000)
-                ),
-                "sectoral marginal non-CE carbon price linkage",
-            ),
+            # GlobalConstraint(
+            #     lambda m, t: (
+            #         m.nonindustry_carbonprice_marg[t]
+            #         >= m.industry_carbonprice_marg[t]
+            #         # (soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000) - m.industry_carbonprice_marg[t]) ** 2
+            #         # <= 0.0001
+            #         # m.industry_carbonprice_marg[t]
+            #         # == soft_max(m.nonindustry_carbonprice_marg[t], m.industry_carbonprice_marg_max[t], 1000)
+            #     ),
+            #     "sectoral marginal non-CE carbon price linkage",
+            # ),
 
             GlobalConstraint(
                 lambda m, t: (
@@ -144,21 +144,21 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "marginal CE carbonprice industry upper bound",
             ),
 
-            GlobalConstraint(
-                lambda m, t: (
-                    m.nonindustry_carbonprice_marg[t]
-                    >= m.CE_carbonprice_marg[t]
-                ),
-                "marginal carbonprice industry CE-based emissions abatement linkage 1",
-            ),
+            # GlobalConstraint(
+            #     lambda m, t: (
+            #         m.nonindustry_carbonprice_marg[t]
+            #         >= m.CE_carbonprice_marg[t]
+            #     ),
+            #     "marginal carbonprice industry CE-based emissions abatement linkage 1",
+            # ),
 
-            GlobalConstraint(
-                lambda m, t: (
-                    m.industry_carbonprice_marg[t]
-                    >= m.CE_carbonprice_marg[t]
-                ),
-                "marginal carbonprice industry CE-based emissions abatement linkage 2",
-            ),
+            # GlobalConstraint(
+            #     lambda m, t: (
+            #         m.industry_carbonprice_marg[t]
+            #         >= m.CE_carbonprice_marg[t]
+            #     ),
+            #     "marginal carbonprice industry CE-based emissions abatement linkage 2",
+            # ),
         ]
     )
 
