@@ -80,6 +80,10 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "marginal non-CE carbonprice industry",
             ),
 
+            GlobalInitConstraint(
+                lambda m: m.industry_carbonprice_marg[0] == 0, "marginal init_carbon_price industry"
+            ),
+
             GlobalConstraint(
                 lambda m, t: (
                     m.industry_carbonprice_marg_max[t]
@@ -118,6 +122,10 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     )
                 ),
                 "marginal CE carbonprice industry",
+            ),
+
+            GlobalInitConstraint(
+                lambda m: m.CE_carbonprice_marg[0] == 0, "marginal init_carbon_price CE industry"
             ),
 
             # GlobalConstraint(

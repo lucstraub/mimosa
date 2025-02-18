@@ -235,11 +235,11 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 == m.emissions_industry_global_baseline[0]
             ),
             GlobalConstraint(
-                lambda m, t: m.emissions_industry_global_relative_abatement_after_CE[t]
-                <= m.industry_max_relative_abatement
+                lambda m, t: m.emissions_industry_global_mitigation_final[t]
+                >= m.industry_max_relative_abatement * m.emissions_industry_global_baseline[t]
                 if t > 0
                 else Constraint.Skip,
-                "global_industry_abatement_limit_non-CE",
+                "global_industry_abatement_limit",
             ),
             RegionalConstraint(
                 lambda m, t, r: m.emissions_total_regional_absolute_reduction[t, r]
