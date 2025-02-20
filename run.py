@@ -20,7 +20,7 @@ params["emissions"]["non increasing emissions after 2100"] = False # changed con
 # params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 
-run_type = 'single'
+run_type = 'cost_calibration'
 # choose either 'single' or 'gamma_calibration' or 'cost_calibration'
 
 if run_type == 'single':
@@ -93,7 +93,8 @@ elif run_type == 'gamma_calibration':
 elif run_type == 'cost_calibration':
     # Below code for total mitigation cost calibration runs
 
-    carbon_budgets = np.arange(620, 631, 1)
+    # carbon_budgets = np.arange(620, 631, 1)
+    carbon_budgets = np.arange(600, 651, 10)
 
     for budget in carbon_budgets:
         params["emissions"]["carbonbudget"] = f"{budget} GtCO2"
