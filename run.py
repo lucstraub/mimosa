@@ -17,7 +17,7 @@ params["emissions"]["inertia"]["global_reverse"] = 0.05 # introduced constraint 
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
-params["industry"]["gamma_scaling"] = 1.0
+# params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 
 run_type = 'single'
@@ -46,11 +46,10 @@ elif run_type == 'gamma_calibration':
     except FileExistsError:
         pass
 
-    gamma_scaling_factors = np.arange(0.6, 1.5, 0.2)
-    # gamma_scaling_factors = [1.03, 1.04, 1.05]
-    # gamma_scaling_factors = [0.985]
-    carbon_budgets = np.arange(500, 701, 100)
-    # carbon_budgets = np.arange(200, 1501, 100)
+    # gamma_scaling_factors = np.arange(0.6, 1.5, 0.2)
+    gamma_scaling_factors = [1.1, 0.97]
+    # carbon_budgets = np.arange(500, 701, 100)
+    carbon_budgets = np.arange(400, 1101, 100)
 
     for scaling in gamma_scaling_factors:
         params["industry"]["gamma_scaling"] = scaling
