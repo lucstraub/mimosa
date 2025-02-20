@@ -65,7 +65,7 @@ elif run_type == 'CE_abatement_sensitivity':
     except FileExistsError:
         pass
 
-    CE_max_rel_abatement = [0.75, 0.45]
+    CE_max_rel_abatement = [0.6]
 
     for abatement in CE_max_rel_abatement:
         params["industry"]["CE_abatement_scaling"] = abatement
