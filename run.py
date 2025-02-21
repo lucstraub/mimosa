@@ -12,13 +12,13 @@ params["time"]["end"] = 2100
 params["emissions"]["baseline carbon intensity"] = False
 # params["time"]["dt"] = 10
 params["emissions"]["inertia"]["global"] = -0.05 # changed constraint to sectoral
-params["emissions"]["inertia"]["global_reverse"] = 0 # introduced constraint for emission increases
+params["emissions"]["inertia"]["global_reverse"] = 0.05 # introduced constraint for emission increases
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
-params['industry']['basic_material_scaling_baseline'] = 0.55 # 0.66 in EU based on Material Economics
-params["industry"]["CE_abatement_scaling"] = 1.0
-params["industry"]["gamma_scaling"] = 1.0
+# params['industry']['basic_material_scaling_baseline'] = 1.0 # 0.66 in EU based on Material Economics
+# params["industry"]["CE_abatement_scaling"] = 1.0
+# params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 # params["industry"]["climate_policy_overlap"] = 0.24
@@ -33,6 +33,8 @@ if run_type == 'single':
     model1.solve()
     # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
     model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+    # model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_fastScaling_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+    # currently need to adjust CE MAC curve scaling manually in industry file
 
     # model1.plot(filename="result")
 
@@ -48,7 +50,7 @@ elif run_type == 'CE_cost_sensitivity':
     except FileExistsError:
         pass
 
-    CE_max_costs = np.arange(200, 1000, 200)
+    CE_max_costs = np.arange(200, 1001, 200)
 
     for cost in CE_max_costs:
         params["industry"]["max_CE_cost"] = cost

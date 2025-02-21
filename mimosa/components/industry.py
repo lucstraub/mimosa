@@ -194,10 +194,12 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 lambda m, t: (
                     (
                         m.CE_max_abatement[t] == m.CE_abatement_scaling * (0 + (0.4 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050
+                        # m.CE_max_abatement[t] == m.CE_abatement_scaling * (0 + (0.6 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050
                     )
                     if (m.year(t) <= 2050 and m.year(t) > 2020)
                     else (
                         m.CE_max_abatement[t] == m.CE_abatement_scaling * (0.4 + (0.2 / 50) * (m.year(t) - 2050)) #linear approximation after 2050
+                        # m.CE_max_abatement[t] == m.CE_abatement_scaling * 0.6 #linear approximation after 2050
                         # this currently also includes 2020 which is not correct but avoids a division by zero error
                         # this has no effect on the results as the year 2020 is set to 0 abatement and 0 carbon price
                     )
