@@ -23,7 +23,7 @@ params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 # params["industry"]["climate_policy_overlap"] = 0.24
 
-run_type = 'single'
+run_type = 'CE_abatement_sensitivity'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
@@ -33,8 +33,8 @@ if run_type == 'single':
     model1.solve()
     # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
     model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+    # currently need to adjust CE MAC curve scaling manually in industry file:
     # model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_fastScaling_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
-    # currently need to adjust CE MAC curve scaling manually in industry file
 
     # model1.plot(filename="result")
 
@@ -46,7 +46,7 @@ elif run_type == 'CE_cost_sensitivity':
     params["industry"]["high_CE_cost"] = True
     
     try:
-        os.mkdir("output/CE_cost_sensitivity")
+        os.mkdir("output/CE_sensitivity_cost")
     except FileExistsError:
         pass
 
@@ -57,13 +57,13 @@ elif run_type == 'CE_cost_sensitivity':
 
         model = MIMOSA(params)
         model.solve()
-        model.save(f"CE_cost_sensitivity/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEcost{cost}")
+        model.save(f"CE_sensitivity_cost/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEcost{cost}")
 
 elif run_type == 'CE_abatement_sensitivity':
     # Below code for CE abatement sensitivity runs
     
     try:
-        os.mkdir("output/CE_abatement_sensitivity")
+        os.mkdir("output/CE_sensitivity_abatement")
     except FileExistsError:
         pass
 
@@ -74,4 +74,6 @@ elif run_type == 'CE_abatement_sensitivity':
 
         model = MIMOSA(params)
         model.solve()
-        model.save(f"CE_abatement_sensitivity/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEabatement{abatement}")
+        model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_CEabatement{abatement}")
+        # currently need to adjust CE MAC curve scaling manually in industry file:
+        # model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_gammascale{params['industry']['gamma_scaling']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_highCEscenario{params['industry']['high_CE_cost']}_fastScaling_CEabatement{abatement}")
