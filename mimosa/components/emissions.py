@@ -163,6 +163,7 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         initialize=0,
         bounds=(0, 1),
     )
+    m.cumulative_emissions_abatement_CE = Var(m.t, units=quant.unit("emissions_unit"))
 
     constraints.extend(
         [
@@ -282,6 +283,23 @@ def _get_emissions_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "cumulative_emissions",
             ),
             GlobalInitConstraint(lambda m: m.cumulative_emissions[0] == 0),
+            GlobalConstraint(
+                lambda m, t: (
+                    m.cumulative_emissions_abatement_CE[t]
+                    == m.cumulative_emissions_abatement_CE[t - 1]
+                    + (
+                        m.dt * m.basic_material_scaling_baseline
+                        * (
+                            m.emissions_industry_global_relative_reduction_from_CE[t] * m.emissions_industry_global_baseline[t]
+                            + m.emissions_industry_global_relative_reduction_from_CE[t - 1] * m.emissions_industry_global_baseline[t - 1]
+                        ) / 2
+                    )
+                    if t > 0
+                    else Constraint.Skip
+                ),
+                "cumulative_emissions_abatement_CE",
+            ),
+            GlobalInitConstraint(lambda m: m.cumulative_emissions_abatement_CE[0] == 0),
         ]
     )
 

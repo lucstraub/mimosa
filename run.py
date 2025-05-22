@@ -23,7 +23,7 @@ params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["high_CE_cost"] = False
 # params["industry"]["climate_policy_overlap"] = 0.24
 
-run_type = 'CE_abatement_sensitivity'
+run_type = 'CE_cost_sensitivity'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
@@ -50,7 +50,8 @@ elif run_type == 'CE_cost_sensitivity':
     except FileExistsError:
         pass
 
-    CE_max_costs = np.arange(200, 1001, 200)
+    # CE_max_costs = np.arange(200, 1001, 200)
+    CE_max_costs = [200]
 
     for cost in CE_max_costs:
         params["industry"]["max_CE_cost"] = cost
