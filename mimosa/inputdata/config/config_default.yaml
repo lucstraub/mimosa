@@ -653,19 +653,26 @@ industry:
     default: False
   
   max_CE_cost:
-    descr: Price of maximum CE-enabled reduction/most expensive CE strategy, setting cost level for CE interventions in industry sector
+    descr: Price of maximum CE-enabled reduction/most expensive CE strategy at 40% abatement in 2050, setting cost level for CE interventions that impact industry sector emissions
     type: float
     min: 0
     max: 4500 #arbitrary number, can be adjusted
-    default: 100
+    default: 200
   
-  CE_abatement_scaling:
+  CE_abatement_adjustment:
     descr: Percentage of CE-enabled emissions abatement to allow for different scenarios (e.g., only recycling)
     type: float
     min: 0
     max: 1
     default: 1
-  
+
+  CE_fast_scaling:
+    descr: >-
+      If true, the model is running a scenario with an early scaling of CE-enabled industry emissions abatement potentials.
+      If false, it is running a scenario with a default scaling of the CE potentials.
+    type: bool
+    default: False
+
   climate_policy_overlap:
     descr: >-
       Percentage of CE abatement that is already addressed by existing climate policies

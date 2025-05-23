@@ -187,21 +187,30 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     # industry abatement cost curve time dynamics, based on Material Economics abatement curve, linear approximation
     m.CE_max_abatement = Var(m.t)
-    m.CE_abatement_scaling = Param(doc="::industry.CE_abatement_scaling") #reduces CE max abatement potential, adapted for alternative CE scenarios
+    m.CE_abatement_adjustment = Param(doc="::industry.CE_abatement_adjustment") #can be used to reduce CE max abatement potential, adapted for alternative CE scenarios
+    m.CE_fast_scaling = Param(doc="::industry.CE_fast_scaling")
     constraints.extend(
         [
             GlobalConstraint(
                 lambda m, t: (
                     (
-                        m.CE_max_abatement[t] == m.CE_abatement_scaling * (0 + (0.4 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050
-                        # currently need to adjust CE MAC curve fast scaling manually in industry file:
-                        # m.CE_max_abatement[t] == m.CE_abatement_scaling * (0 + (0.6 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050
+                        (
+                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0 + (0.4 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050 up to 40% abatement potential
+                        )
+                        if m.CE_fast_scaling is False
+                        else (
+                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0 + (0.6 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050 up to 60% abatement potential
+                        )
                     )
                     if (m.year(t) <= 2050 and m.year(t) > 2020)
                     else (
-                        m.CE_max_abatement[t] == m.CE_abatement_scaling * (0.4 + (0.2 / 50) * (m.year(t) - 2050)) #linear approximation after 2050
-                        # currently need to adjust CE MAC curve fast scaling manually in industry file:
-                        # m.CE_max_abatement[t] == m.CE_abatement_scaling * 0.6 #linear approximation after 2050
+                        (
+                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0.4 + (0.2 / 50) * (m.year(t) - 2050)) #linear approximation after 2050 sloping down to 0.6 in 2100
+                        )
+                        if m.CE_fast_scaling is False
+                        else (
+                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * 0.6 #constant max level at 60% potential after 2050
+                        )
                         # this currently also includes 2020 which is not correct but avoids a division by zero error
                         # this has no effect on the results as the year 2020 is set to 0 abatement and 0 carbon price
                     )

@@ -17,13 +17,13 @@ params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
 # params['industry']['basic_material_scaling_baseline'] = 1.0 # 0.66 in EU based on Material Economics
-# params["industry"]["CE_abatement_scaling"] = 1.0
+# params["industry"]["CE_abatement_adjustment"] = 1.0
 # params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["low_CE_cost"] = False
 # params["industry"]["climate_policy_overlap"] = 0.24
 
-run_type = 'CE_cost_sensitivity'
+run_type = 'CE_abatement_sensitivity'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
@@ -33,8 +33,6 @@ if run_type == 'single':
     model1.solve()
     # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
     model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
-    # currently need to adjust CE MAC curve scaling manually in industry file:
-    # model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost']}_fastScaling_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
     # model1.plot(filename="result")
 
@@ -49,7 +47,7 @@ elif run_type == 'CE_cost_sensitivity':
         pass
 
     # CE_max_costs = np.arange(200, 1001, 200)
-    CE_max_costs = [200]
+    CE_max_costs = [100, 1000]
 
     for cost in CE_max_costs:
         params["industry"]["max_CE_cost"] = cost
@@ -68,13 +66,21 @@ elif run_type == 'CE_abatement_sensitivity':
     except FileExistsError:
         pass
 
-    CE_max_rel_abatement = [0.6]
+    # for reduced CE abatement potential scenarios
+    CE_max_rel_abatement = [0.2, 0.6]
+    basic_material_scaling = [0.5]
+    
+    # for agumented CE abatement potential scenarios
+    # CE_max_rel_abatement = [1.0]
+    # basic_material_scaling = [0.5, 0.75]
+    # params['industry']['CE_fast_scaling'] = True
 
     for abatement in CE_max_rel_abatement:
-        params["industry"]["CE_abatement_scaling"] = abatement
+        params["industry"]["CE_abatement_adjustment"] = abatement
 
-        model = MIMOSA(params)
-        model.solve()
-        model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost']}_CEabatement{abatement}")
-        # currently need to adjust CE MAC curve scaling manually in industry file:
-        # model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost']}_fastScaling_CEabatement{abatement}")
+        for scaling in basic_material_scaling:
+            params['industry']['basic_material_scaling_baseline'] = scaling
+
+            model = MIMOSA(params)
+            model.solve()
+            model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_fastScaling{params['industry']['CE_fast_scaling']}_CEabatement{abatement}")
