@@ -56,17 +56,16 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     (
                         m.CE_mitigation_costs_industry[t]
                         == (
-                            global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                            global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t], m, t) # currently using the upper half of the range of CE-related emissions abatement
                             * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
                         )
                     )
-                    if value(m.high_CE_cost)
+                    if value(m.low_CE_cost)
                     else
                     (
                         m.CE_mitigation_costs_industry[t]
                         == (
-                            global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t], m, t) # currently using the upper half of the range of CE-related emissions abatement
-                            # * global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
+                            global_AC_industry_CE(m.emissions_industry_global_relative_reduction_from_CE[t], m, t)
                             * m.basic_material_scaling_baseline * m.emissions_industry_global_baseline[t] # applying reduction through CE to basic material production share of industry emissions
                         )
                     )

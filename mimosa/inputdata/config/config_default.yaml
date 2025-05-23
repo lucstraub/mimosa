@@ -645,10 +645,10 @@ industry:
     max: 2
     default: 0.975
   
-  high_CE_cost:
+  low_CE_cost:
     descr: >-
-      If true, the model is running a scenario with a CE MAC curve building on higher cost assumption.
-      If false, it is running a scenario with a CE MAC curve building on lower cost assumption.
+      If true, the model is running a scenario with an adjusted CE MAC curve shape building a piece-wise linear function that reflects lower cost assumptions.
+      If false, it is running a scenario with a CE MAC curve in default shape.
     type: bool
     default: False
   
