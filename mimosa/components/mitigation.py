@@ -83,7 +83,7 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
         m.regions,
         doc=lambda params: f'regional::MAC.{params["economics"]["MAC"]["regional calibration factor"]}',
     )  # Regional scaling of the MAC
-    m.nonindustry_carbonprice = Var(
+    m.nonindustry_carbonprice_marg = Var(
         m.t,
         bounds=lambda m: (0, 2 * m.MAC_gamma),
         units=quant.unit("currency_unit/emissions_unit"),
@@ -105,12 +105,12 @@ def _get_mac_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                 "rel_mitigation_costs_non_negative",
             ),
             GlobalConstraint(
-                lambda m, t: m.nonindustry_carbonprice[t]
+                lambda m, t: m.nonindustry_carbonprice_marg[t]
                 == MAC(m.emissions_other_global_relative_abatement[t], m, t),
-                "carbonprice non-industry",
+                "marginal carbonprice non-industry",
             ),
             GlobalInitConstraint(
-                lambda m: m.nonindustry_carbonprice[0] == 0, "init_carbon_price non-industry"
+                lambda m: m.nonindustry_carbonprice_marg[0] == 0, "init_carbon_price non-industry"
             ),
         ]
     )
