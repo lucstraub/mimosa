@@ -171,15 +171,21 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     constraints.extend(
         [
             GlobalConstraint(
-                lambda m, t: (m.CE_max_abatement[t] / 2 >= m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t]),
+                lambda m, t: (m.CE_max_abatement[t] / 2 >= m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t])
+                    if m.low_CE_cost
+                    else Constraint.Skip,
                 "time-dependent upper boundary at half CE_max_abatement for upper half of CE abatement curve",
             ),
             GlobalConstraint(
-                lambda m, t: (m.emissions_industry_global_relative_reduction_from_CE[t] >= m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t]),
+                lambda m, t: (m.emissions_industry_global_relative_reduction_from_CE[t] >= m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t])
+                    if m.low_CE_cost
+                    else Constraint.Skip,
                 "Entire CE abatement must be equal or bigger than upper half of CE abatement curve",
             ),
             GlobalConstraint(
-                lambda m, t: (m.CE_max_abatement[t] / 2 >= m.emissions_industry_global_relative_reduction_from_CE[t] - m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t]),
+                lambda m, t: (m.CE_max_abatement[t] / 2 >= m.emissions_industry_global_relative_reduction_from_CE[t] - m.emissions_industry_global_relative_reduction_from_CE_upperHalf[t])
+                    if m.low_CE_cost
+                    else Constraint.Skip,
                 "time-dependent upper boundary at half CE_max_abatement for lower half of CE abatement curve",
             ),
         ]
