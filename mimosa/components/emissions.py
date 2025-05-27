@@ -585,7 +585,7 @@ def _get_inertia_and_budget_constraints(
             # Global and regional inertia constraints:
             GlobalConstraint(
                 lambda m, t: (
-                    m.emissions_industry_global_mitigation_final[t] - m.emissions_industry_global_mitigation_final[t - 1]
+                    m.emissions_industry_global_mitigation_final[t] - m.emissions_industry_global_mitigation_final[t - 1] - (m.emissions_industry_global_mitigation_CE[t] - m.emissions_industry_global_mitigation_CE[t - 1])
                     >= m.dt
                     * m.inertia_global
                     * m.emissions_industry_global_baseline[t]
@@ -593,6 +593,17 @@ def _get_inertia_and_budget_constraints(
                     else Constraint.Skip
                 ),
                 name="global_inertia industry",
+            ),
+            GlobalConstraint(
+                lambda m, t: (
+                    m.emissions_industry_global_mitigation_CE[t] - m.emissions_industry_global_mitigation_CE[t - 1]
+                    >= m.dt
+                    * m.inertia_global
+                    * m.emissions_industry_global_baseline[t] * m.basic_material_scaling_baseline
+                    if value(m.inertia_global) is not False and t > 0
+                    else Constraint.Skip
+                ),
+                name="global_inertia CE",
             ),
             GlobalConstraint(
                 lambda m, t: (

@@ -23,7 +23,7 @@ params["model"]["welfare module"] = "cost_minimising"
 params["industry"]["low_CE_cost"] = False
 # params["industry"]["climate_policy_overlap"] = 0.24
 
-run_type = 'CE_abatement_sensitivity'
+run_type = 'single'
 # choose either 'single' or 'CE_cost_sensitivity' or 'CE_abatement_sensitivity'
 
 if run_type == 'single':
