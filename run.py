@@ -12,15 +12,15 @@ params["emissions"]["carbonbudget"] = "500 GtCO2"
 params["time"]["end"] = 2100
 params["emissions"]["baseline carbon intensity"] = False
 # params["time"]["dt"] = 10
-params["emissions"]["inertia"]["global"] = -0.05 # changed constraint to sectoral
-params["emissions"]["inertia"]["global_reverse"] = 0.05 # introduced constraint for emission increases
+params["emissions"]["inertia"]["global"] = -0.04 # changed constraint to sectoral
+# params["emissions"]["inertia"]["global_reverse"] = 0.05 # introduced constraint for emission increases
 params["emissions"]["inertia"]["regional"] = False
 params["emissions"]["regional min level"] = False
 params["emissions"]["non increasing emissions after 2100"] = False # changed constraint from regional to global
 # params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 
-run_type = 'cost_calibration'
+run_type = 'single'
 # choose either 'single' or 'gamma_calibration' or 'cost_calibration'
 
 if run_type == 'single':
