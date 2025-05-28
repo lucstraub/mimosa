@@ -47,7 +47,8 @@ elif run_type == 'CE_cost_sensitivity':
         pass
 
     # CE_max_costs = np.arange(200, 1001, 200)
-    CE_max_costs = [100, 1000]
+    # CE_max_costs = [100, 1000]
+    CE_max_costs = [100]
 
     for cost in CE_max_costs:
         params["industry"]["max_CE_cost"] = cost
@@ -69,7 +70,8 @@ elif run_type == 'CE_abatement_sensitivity':
         pass
 
     # for reduced CE abatement potential scenarios
-    CE_max_rel_abatement = [0.2, 0.6]
+    # CE_max_rel_abatement = [0.2, 0.6]
+    CE_max_rel_abatement = [0.649]
     basic_material_scaling = [0.5]
     
     # for agumented CE abatement potential scenarios
