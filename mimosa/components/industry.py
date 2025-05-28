@@ -212,17 +212,17 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                         else (
                             m.CE_max_abatement[t] == m.CE_abatement_adjustment * 0.6 #constant max level at 60% potential after 2050
                         )
-                        # this currently also includes 2020 which is not correct but avoids a division by zero error
-                        # this has no effect on the results as the year 2020 is set to 0 abatement and 0 carbon price
+                        # this currently also includes 2020 which is not correct but avoids some solver/ solution path complexity
+                        # this has no effect on the results as the year 2020 is set to 0 abatement
                     )
                 ),
                 "CE abatement curve time-dependent maximum abatement",
             ),
 
-            GlobalConstraint(
-                lambda m, t: (m.CE_max_abatement[t] >= m.emissions_industry_global_relative_reduction_from_CE[t]),
-                "time-dependent upper boundary for CE abatement curve",
-            ),
+            # GlobalConstraint(
+            #     lambda m, t: (m.CE_max_abatement[t] >= m.emissions_industry_global_relative_reduction_from_CE[t]),
+            #     "time-dependent upper boundary for CE abatement curve",
+            # ),
         ]
     )
 
@@ -270,10 +270,8 @@ def global_MAC_industry_CE(a, m, t):
         # return conversion_factor * (100 / mid_point) * (a - mid_point)
     else:
         # default and high cost scenario: linear function, max price to be set at 40% abatement (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
-        # return conversion_factor * exp(2 * a)
-        # return conversion_factor * (exp(15 * a) - 1)
-        return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a
-        # return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a + exp(100*(a - 0.4))) # exp(150 * (a - m.CE_max_abatement[t] + 0.025)))
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a + exp(150 * (a - m.CE_max_abatement[t] + 0.025)))
 
 def global_AC_industry_CE(a, m, t):
 
@@ -284,7 +282,5 @@ def global_AC_industry_CE(a, m, t):
         # return conversion_factor * (100 / mid_point) * ((a ** (1 + 1) / (1 + 1) - mid_point * a ** (0 + 1) / (0 + 1)) - (mid_point ** (1 + 1) / (1 + 1) - mid_point * mid_point ** (0 + 1) / (0 + 1))) # integral includes subtraction of term of lower half abatement cost offsetting the negative cost up to midpoint/ ensuring zero cost up to midpoint
     else:
         # default and high cost scenario: linear function, max price to be set (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
-        # return conversion_factor * exp(2 * a) / 2
-        # return conversion_factor * (exp(15 * a) - 1) / 15
-        return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a ** (1 + 1) / (1 + 1)
-        # return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a ** (1 + 1) / (1 + 1) + exp(100*(a - 0.4))/100) # exp(150 * (a - m.CE_max_abatement[t] + 0.025)) / 150)
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a ** (1 + 1) / (1 + 1)
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.4) * a ** (1 + 1) / (1 + 1) + exp(150 * (a - m.CE_max_abatement[t] + 0.025)) / 150)
