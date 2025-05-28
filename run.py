@@ -53,10 +53,12 @@ elif run_type == 'CE_cost_sensitivity':
         params["industry"]["max_CE_cost"] = cost
         if cost == 100:
             params["industry"]["low_CE_cost"] = True
+        else:
+            params["industry"]["low_CE_cost"] = False
 
         model = MIMOSA(params)
         model.solve()
-        model.save(f"CE_sensitivity_cost/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{cost}")
+        model.save(f"CE_sensitivity_cost/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{cost}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
 elif run_type == 'CE_abatement_sensitivity':
     # Below code for CE abatement sensitivity runs
@@ -83,4 +85,4 @@ elif run_type == 'CE_abatement_sensitivity':
 
             model = MIMOSA(params)
             model.solve()
-            model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_fastScaling{params['industry']['CE_fast_scaling']}_CEabatement{abatement}")
+            model.save(f"CE_sensitivity_abatement/result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_fastScaling{params['industry']['CE_fast_scaling']}_CEabatement{abatement}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")

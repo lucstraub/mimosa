@@ -183,6 +183,8 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
                     else Constraint.Skip,
                 "time-dependent upper boundary at half CE_max_abatement for lower half of CE abatement curve",
             ),
+            # note that this can lead to positive value for emissions_industry_global_relative_reduction_from_CE in 2020 in the output file (linked to m.CE_max_abatement[2020] calculation below)
+            # this has no consequence for calculations as abatement and cost logic correctly calculates 0 abatement and cost in 2020
         ]
     )
 
