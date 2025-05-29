@@ -73,7 +73,9 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
     m.gamma_scaling = Param(doc="::industry.gamma_scaling")
     m.low_CE_cost = Param(doc="::industry.low_CE_cost") #boolean to distinguish low cost scenario for CE measures that uses an alternative CE MAC curve shape
-    m.max_CE_cost = Param(doc="::industry.max_CE_cost")
+    m.max_CE_cost_2050 = Param(doc="::industry.max_CE_cost_2050")
+    m.max_CE_abatement_2050 = Param(doc="::industry.max_CE_abatement_2050")
+    m.max_CE_abatement_2100 = Param(doc="::industry.max_CE_abatement_2100")
 
     constraints.extend(
         [
@@ -134,7 +136,7 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
 
             # GlobalConstraint(
             #     lambda m, t: (
-            #         (m.CE_carbonprice_marg[t] <= m.max_CE_cost * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
+            #         (m.CE_carbonprice_marg[t] <= m.max_CE_cost_2050 * 1.0508474576271185 / 1000) #conversion factor from 2015Euro to 2005USD & conversion from USD/tCO2 to trillion USD/Gt CO2
             #     ),
             #     "marginal CE carbonprice industry upper bound",
             # ),
@@ -191,29 +193,17 @@ def get_constraints(m: AbstractModel) -> Sequence[GeneralConstraint]:
     # industry abatement cost curve time dynamics, based on Material Economics abatement curve, linear approximation
     m.CE_max_abatement = Var(m.t)
     m.CE_abatement_adjustment = Param(doc="::industry.CE_abatement_adjustment") #can be used to reduce CE max abatement potential, adapted for alternative CE scenarios
-    m.CE_fast_scaling = Param(doc="::industry.CE_fast_scaling")
+    # m.CE_fast_scaling = Param(doc="::industry.CE_fast_scaling") # replaced by parameter max_CE_abatement_2050 to adjust 2050 abatement potential directly for faster scaling
     constraints.extend(
         [
             GlobalConstraint(
                 lambda m, t: (
                     (
-                        (
-                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0 + (0.425 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050 up to 40-45% abatement potential
-                        )
-                        if value(m.CE_fast_scaling) is False
-                        else (
-                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0 + (0.6 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050 up to 60% abatement potential
-                        )
+                        m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0 + (m.max_CE_abatement_2050 / 30) * (m.year(t) - 2020)) #linear approximation for 2020-2050 up to specified max_CE_abatement_2050 (default: 40-45% abatement potential)
                     )
                     if (m.year(t) <= 2050 and m.year(t) > 2020)
                     else (
-                        (
-                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * (0.425 + (0.175 / 50) * (m.year(t) - 2050)) #linear approximation after 2050 increasing more slowly up to 60% in 2100
-                        )
-                        if value(m.CE_fast_scaling) is False
-                        else (
-                            m.CE_max_abatement[t] == m.CE_abatement_adjustment * 0.6 #constant max level at 60% potential after 2050
-                        )
+                        m.CE_max_abatement[t] == m.CE_abatement_adjustment * (m.max_CE_abatement_2050 + ((m.max_CE_abatement_2100 - m.max_CE_abatement_2050) / 50) * (m.year(t) - 2050)) #linear approximation after 2050 (default: increasing more slowly up to 60% in 2100)
                         # this currently also includes 2020 which is not correct but avoids some solver/ solution path complexity (linked to exponential function in CE MAC/AC curves)
                         # this has no effect on the results as the year 2020 is set to 0 abatement
                     )
@@ -268,23 +258,23 @@ def global_MAC_industry_CE(a, m, t):
     if value(m.low_CE_cost):
         # low cost scenario: max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting to increase towards max price at mid-point of abatement curve
         mid_point = 0.425 / 2
-        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / mid_point) * a # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
-        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / mid_point) * a + exp(150 * (a - m.CE_max_abatement[t]/2 + 0.025))) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / mid_point) * a # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / mid_point) * a + exp(150 * (a - m.CE_max_abatement[t]/2 + 0.025))) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
         # return conversion_factor * (100 / mid_point) * (a - mid_point)
     else:
         # default and high cost scenario: linear function, max price to be set at 40% abatement (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
-        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.425) * a
-        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.425) * a + exp(150 * (a - m.CE_max_abatement[t] + 0.025)))
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / 0.425) * a
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / 0.425) * a + exp(150 * (a - m.CE_max_abatement[t] + 0.025)))
 
 def global_AC_industry_CE(a, m, t):
 
     if value(m.low_CE_cost):
         # low cost scenario: max price = 100 USD/tCO2, min price = 0 USD/tCO2, piecewise linear function with cost starting at mid-point of abatement curve
         mid_point = 0.425 / 2
-        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / mid_point) * (a ** (1 + 1) / (1 + 1)) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
-        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / mid_point) * (a ** (1 + 1) / (1 + 1)) + exp(150 * (a - m.CE_max_abatement[t]/2 + 0.025)) / 150) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / mid_point) * (a ** (1 + 1) / (1 + 1)) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / mid_point) * (a ** (1 + 1) / (1 + 1)) + exp(150 * (a - m.CE_max_abatement[t]/2 + 0.025)) / 150) # currently using upper half of CE abatement curve adjustment, due to piecewise linear function implementation complexity in ipopt solver
         # return conversion_factor * (100 / mid_point) * ((a ** (1 + 1) / (1 + 1) - mid_point * a ** (0 + 1) / (0 + 1)) - (mid_point ** (1 + 1) / (1 + 1) - mid_point * mid_point ** (0 + 1) / (0 + 1))) # integral includes subtraction of term of lower half abatement cost offsetting the negative cost up to midpoint/ ensuring zero cost up to midpoint
     else:
         # default and high cost scenario: linear function, max price to be set (e.g., 200 USD/tCO2), min price = 0 USD/tCO2
-        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.425) * a ** (1 + 1) / (1 + 1)
-        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost / m.LBD_factor_CE[6]) / 0.425) * a ** (1 + 1) / (1 + 1) + exp(150 * (a - m.CE_max_abatement[t] + 0.025)) / 150)
+        # return m.LBD_factor_CE[t] * conversion_factor * ((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / 0.425) * a ** (1 + 1) / (1 + 1)
+        return m.LBD_factor_CE[t] * conversion_factor * (((m.max_CE_cost_2050 / m.LBD_factor_CE[6]) / 0.425) * a ** (1 + 1) / (1 + 1) + exp(150 * (a - m.CE_max_abatement[t] + 0.025)) / 150)

@@ -652,15 +652,29 @@ industry:
     type: bool
     default: False
   
-  max_CE_cost:
-    descr: Price of maximum CE-enabled reduction/most expensive CE strategy at 40% abatement in 2050, setting cost level for CE interventions that impact industry sector emissions
+  max_CE_cost_2050:
+    descr: Price of maximum CE-enabled reduction/most expensive CE strategy at specified max_CE_abatement_2050 in 2050, setting cost level for CE interventions that impact industry sector emissions
     type: float
     min: 0
     max: 4500 #arbitrary number, can be adjusted
     default: 200
+
+  max_CE_abatement_2050:
+    descr: Maximum CE-enabled reduction in 2050, setting abatement potential for CE interventions that impact industry sector emissions
+    type: float
+    min: 0
+    max: 1
+    default: 0.425
   
+  max_CE_abatement_2100:
+    descr: Maximum CE-enabled reduction in 2100, setting abatement potential for CE interventions that impact industry sector emissions
+    type: float
+    min: 0
+    max: 1
+    default: 0.6
+
   CE_abatement_adjustment:
-    descr: Percentage of CE-enabled emissions abatement to allow for different scenarios (e.g., only recycling)
+    descr: Percentage of CE-enabled emissions abatement to allow for reduced abatement potentials in alternative scenarios (e.g., only recycling)
     type: float
     min: 0
     max: 1

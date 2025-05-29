@@ -32,7 +32,7 @@ if run_type == 'single':
     model1 = MIMOSA(params)
     model1.solve()
     # model1.solve(use_neos=True, neos_email="l.straub@uu.nl")
-    model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+    model1.save(f"result_CE_budget{params['emissions']['carbonbudget']}_industry{params['industry']['industry_scaling_baseline']}material{params['industry']['basic_material_scaling_baseline']}_CEcost{params['industry']['max_CE_cost_2050']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
 
     # model1.plot(filename="result")
 
@@ -51,7 +51,7 @@ elif run_type == 'CE_cost_sensitivity':
     CE_max_costs = [100]
 
     for cost in CE_max_costs:
-        params["industry"]["max_CE_cost"] = cost
+        params["industry"]["max_CE_cost_2050"] = cost
         if cost == 100:
             params["industry"]["low_CE_cost"] = True
         else:
@@ -71,13 +71,14 @@ elif run_type == 'CE_abatement_sensitivity':
 
     # for reduced CE abatement potential scenarios
     # CE_max_rel_abatement = [0.2, 0.6]
-    CE_max_rel_abatement = [0.649]
+    CE_max_rel_abatement = [0.599]
+    params["industry"]["max_CE_cost_2050"] = 140 / 0.599 # currently requires manual adjustment for reduced-potential every scenario: (max_cost / (CE_max_rel_abatement * 0.425)) * 0.425
     basic_material_scaling = [0.5]
     
     # for agumented CE abatement potential scenarios
     # CE_max_rel_abatement = [1.0]
     # basic_material_scaling = [0.5, 0.75]
-    # params['industry']['CE_fast_scaling'] = True
+    # params["industry"]["max_CE_abatement_2050"] = 0.6 # fast scaling
 
     for abatement in CE_max_rel_abatement:
         params["industry"]["CE_abatement_adjustment"] = abatement
