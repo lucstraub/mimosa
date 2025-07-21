@@ -20,8 +20,8 @@ params["emissions"]["non increasing emissions after 2100"] = False # changed con
 # params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 
-run_type = 'single'
-# choose either 'single' or 'gamma_calibration' or 'cost_calibration'
+run_type = 'baseline'
+# choose either 'single' or 'gamma_calibration' or 'cost_calibration' or 'baseline'
 
 if run_type == 'single':
     # Below code for single scenario runs
@@ -128,3 +128,37 @@ elif run_type == 'cost_calibration':
 
     results = pd.DataFrame(results)
     results.to_csv(f"output/calibration_cost/npv_costs_nonCE_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}.csv", index=False)
+
+    #---------------------------------------------------
+
+elif run_type == 'baseline':
+    # Below code for no policy baseline scenario runs
+
+    params["emissions"]["carbonbudget"] = False
+    params["economics"]["damages"]["ignore damages"] = True
+    params["model"]["welfare module"] = "cost_minimising"
+
+    params["simulation"]["simulationmode"] = True
+    params["simulation"]["constraint_variables"] = {
+        "emissions_other_global_relative_abatement": {
+            year: {"Global": 0.0}
+            for year in range(2025, 2101, 5)
+        },
+        "emissions_industry_global_relative_abatement": {
+            year: {"Global": 0.0}
+            for year in range(2025, 2101, 5)
+        },
+    }
+    params["economics"]["MAC"]["gamma"] = "0.000001 USD2005/tCO2"
+
+    # Disable
+    params["emissions"]["non increasing emissions after 2100"] = False
+    params["emissions"]["not positive after budget year"] = False
+    params["emissions"]["inertia"]["regional"] = False
+    params["emissions"]["inertia"]["global"] = False
+
+    model = MIMOSA(params)
+    model.solve()
+    model.save(f"baseline_noPolicy_industry{params['industry']['industry_scaling_baseline']}_gammascale{params['industry']['gamma_scaling']}_run{datetime.today().strftime('%Y-%m-%d-%H-%M')}")
+
+    #---------------------------------------------------
