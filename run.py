@@ -20,7 +20,7 @@ params["emissions"]["non increasing emissions after 2100"] = False # changed con
 # params["industry"]["gamma_scaling"] = 1.0
 params["model"]["welfare module"] = "cost_minimising"
 
-run_type = 'baseline'
+run_type = 'single'
 # choose either 'single' or 'gamma_calibration' or 'cost_calibration' or 'baseline'
 
 if run_type == 'single':

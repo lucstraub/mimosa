@@ -10,6 +10,7 @@ output/*
 AD-RICE/*
 extra_scripts/*
 *.ipynb
+!npv_analysis.ipynb
 *.html
 None
 
